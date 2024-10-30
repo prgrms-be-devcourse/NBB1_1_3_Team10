@@ -122,7 +122,7 @@ public class MovieServiceImpl implements MovieService {
 		Optional<CachedMovieEntity> find = movieRepository.findByMovieId(movieId);
 		if (find.isPresent()) {
 			log.info("[MovieService.getMovieDetailInfo] {} 영화 존재하므로 DB 내에서 제공", movieId);
-			return MovieDetailRespDTO.from(find.get());
+			return MovieDetailRespDTO.Companion.from(find.get());
 		}
 
 		String[] docId = movieId.split("-");
@@ -143,7 +143,7 @@ public class MovieServiceImpl implements MovieService {
 			CachedMovieEntity movieEntity = parseCachedMovieFromJsonMovie(movieArray);
 			movieRepository.saveNewMovie(movieEntity);
 			log.info("[MovieService.getMovieDetailInfo] {} 영화 저장 완료", movieEntity.getMovieId());
-			return MovieDetailRespDTO.from(movieEntity);
+			return MovieDetailRespDTO.Companion.from(movieEntity);
 		} catch (JSONException e) {
 			log.info("[MovieService.getMovieDetailInfo] KMDB API를 통해 영화 조회결과가 적절하지 않음.");
 			throw new NoMovieException("해당 영화는 제공되지 않습니다.");

@@ -22,10 +22,11 @@ public class DibRepositoryJpaImpl implements DibRepository {
      */
     @Override
     public DibEntity saveNewDib(UUID userId, String movieId) {
-        DibEntity data = DibEntity.builder()
-                .userId(userId)
-                .movieId(movieId)
-                .build();
+        DibEntity data = new DibEntity(
+                null,
+                userId,
+                movieId
+        );
 
         return jpaRepo.save(data);
     }

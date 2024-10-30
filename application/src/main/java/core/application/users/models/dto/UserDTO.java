@@ -39,15 +39,15 @@ public class UserDTO {
 
     // UserDTO -> UserEntity 변환 메서드
     public UserEntity toEntity() {
-        return UserEntity.builder()
-                .userId(this.userId)
-                .userEmail(this.userEmail)
-                .userPw(this.userPw)
-                .role(this.role)
-                .alias(this.alias)
-                .phoneNum(this.phoneNum)
-                .userName(this.userName)
-                .build();
+        return new UserEntity(
+                this.userId,
+                this.userEmail,
+                this.userPw,
+                this.role,
+                this.alias,
+                this.phoneNum,
+                this.userName
+        );
     }
 
     public void encodePassword() {

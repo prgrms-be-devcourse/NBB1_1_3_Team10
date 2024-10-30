@@ -159,13 +159,15 @@ public class TokenService {
         Optional<UserEntity> userEntity = userService.getUserByUserEmail(userEmail);
 
         // 주요한 정보 제외한 UserEntity 반환
-        return userEntity.map(entity -> UserEntity.builder()
-                .userEmail(entity.getUserEmail())
-                .userId(entity.getUserId())
-                .alias(entity.getAlias())
-                .userName(entity.getUserName())
-                .role(entity.getRole())
-                .build());
+        return userEntity.map(entity -> new UserEntity(
+                entity.getUserId(),
+                entity.getUserEmail(),
+                null,
+                entity.getRole(),
+                entity.getAlias(),
+                null,
+                entity.getUserName()
+        ));
     }
 
     /**
