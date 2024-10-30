@@ -27,9 +27,22 @@ https://tech.kakao.com/posts/498
 
 # 🎋 Branch 컨벤션
 
-- 커밋 태그/이슈번호/기능명(CamelCase) ⇒ 이슈 트래커 브랜치 사용 시
+#### 기본 네이밍 규칙
 
-like  `feat/#23/userService`
+소문자와 하이픈 사용: 브랜치 이름은 소문자를 사용하고, 단어 사이는 하이픈('-')으로 구분
+
+영숫자만 사용: 영숫자(a-z, 0-9)와 하이픈만 사용하되, 구두점이나 공백, 밑줄은 피함
+
+명확하고 간결하게: 브랜치가 수행하는 작업을 명확하게 반영하는 이름을 선택
+
+
+#### 브랜치 유형별 네이밍 예시
+
+- 기능 개발: feature/login-system
+- 버그 수정: bugfix/header-styling
+- 긴급 수정: hotfix/critical-security-issue
+- 릴리스 준비: release/v1.0.1
+- 문서 작업: docs/api-endpoints1
 
 ---
 <br>
