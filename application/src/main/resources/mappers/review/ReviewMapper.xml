@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="core.application.reviews.repositories.mybatis.mappers.ReviewMapper">
+
+    <insert id="saveNewReview" parameterType="map" useGeneratedKeys="true" keyProperty="review.reviewId" keyColumn="review_id">
+        INSERT INTO review_table
+            (movie_id, user_id, title, content, `like`, created_at, updated_at)
+        VALUES
+            (#{movieId}, #{userId}, #{review.title}, #{review.content}, #{review.like}, #{review.createdAt}, #{review.updatedAt})
+    </insert>
+
+    <select id="findByReviewId" resultMap="ReviewResultMap">
+        SELECT *
+        FROM REVIEW_TABLE
+        WHERE review_id = #{reviewId}
+    </select>
+
+    <select id="findByReviewIdWithoutContent" resultMap="ReviewResultMap">
+        SELECT review_id, title, user_id, movie_id, `like`, created_at, updated_at
+        FROM review_table
+        WHERE review_id = #{reviewId}
+    </select>
+
+    <select id="findByMovieId" resultMap="ReviewResultMap">
+        SELECT * FROM REVIEW_TABLE WHERE movie_id = #{movieId}
+        LIMIT #{num} OFFSET #{offset}
+    </select>
+
+    <select id="findByMovieIdOnDateDescend" resultMap="ReviewResultMap">
+        SELECT *
+        FROM REVIEW_TABLE
+        WHERE movie_id = #{movieId}
+        ORDER BY created_at DESC, review_id DESC
+        LIMIT #{num} OFFSET #{offset}
+    </select>
+
+    <select id="findByMovieIdOnLikeDescend" resultMap="ReviewResultMap">
+        SELECT *
+        FROM REVIEW_TABLE
+        WHERE movie_id = #{movieId}
+        ORDER BY `like` DESC, review_id DESC
+        LIMIT #{num} OFFSET #{offset}
+    </select>
+
+    <select id="findByMovieIdWithoutContent" resultMap="ReviewResultMap">
+        SELECT review_id, title, user_id, movie_id, `like`, created_at, updated_at
+        FROM REVIEW_TABLE
+        WHERE movie_id = #{movieId}
+        LIMIT #{num} OFFSET #{offset}
+    </select>
+
+    <select id="findByMovieIdWithoutContentOnDateDescend" resultMap="ReviewResultMap">
+        SELECT review_id, title, user_id, movie_id, `like`, created_at, updated_at
+        FROM REVIEW_TABLE
+        WHERE movie_id = #{movieId}
+        ORDER BY created_at DESC, review_id DESC
+        LIMIT #{num} OFFSET #{offset}
+    </select>
+
+    <select id="findByMovieIdWithoutContentOnLikeDescend" resultMap="ReviewResultMap">
+        SELECT review_id, title, user_id, movie_id, `like`, created_at, updated_at
+        FROM REVIEW_TABLE
+        WHERE movie_id = #{movieId}
+        ORDER BY `like` DESC, review_id DESC
+        LIMIT #{num} OFFSET #{offset}
+    </select>
+
+    <select id="countByMovieId" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM review_table
+        WHERE movie_id = #{movieId}
+    </select>
+
+
+    <select id="findByUserId" resultMap="ReviewResultMap">
+        SELECT * FROM REVIEW_TABLE WHERE user_id = #{userId}
+    </select>
+
+    <select id="selectAll" resultMap="ReviewResultMap">
+        SELECT * FROM REVIEW_TABLE
+    </select>
+
+    <update id="editReviewInfo">
+        UPDATE REVIEW_TABLE
+        SET title = #{replacement.title},
+            content = #{replacement.content},
+            `like` = #{replacement.like},
+            updated_at = #{replacement.updatedAt}
+        WHERE review_id = #{reviewId}
+    </update>
+
+    <update id="updateLikes">
+        UPDATE review_table
+        SET `like` = #{givenLikes}
+        WHERE review_id = #{reviewId}
+    </update>
+
+    <delete id="deleteReview">
+        DELETE FROM REVIEW_TABLE WHERE review_id = #{reviewId}
+    </delete>
+
+    <resultMap id="ReviewResultMap" type="core.application.reviews.models.entities.ReviewEntity">
+        <id property="reviewId" column="review_id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="userId" column="user_id"/>
+        <result property="movieId" column="movie_id"/>
+        <result property="like" column="like"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+</mapper>
+
