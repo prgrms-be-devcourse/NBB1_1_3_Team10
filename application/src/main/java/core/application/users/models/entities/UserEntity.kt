@@ -19,10 +19,6 @@ data class UserEntity (
     val phoneNum: String? = null,
     val userName: String? = null
 ) {
-    constructor(UserId: UUID, UserEmail: String, Alias: String, UserName: String, Role: UserRole) : this() {
-
-    }
-
     override fun equals(o: Any?): Boolean {
         if (this === o) {
             return true

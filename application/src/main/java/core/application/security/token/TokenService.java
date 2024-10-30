@@ -162,9 +162,11 @@ public class TokenService {
         return userEntity.map(entity -> new UserEntity(
                 entity.getUserId(),
                 entity.getUserEmail(),
+                null,
+                entity.getRole(),
                 entity.getAlias(),
-                entity.getUserName(),
-                entity.getRole()
+                null,
+                entity.getUserName()
         ));
     }
 
