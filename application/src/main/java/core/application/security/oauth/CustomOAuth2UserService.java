@@ -71,13 +71,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         // OAuth로 인증된 사용자 DB에 저장
         if (existedUser.isEmpty()) {
-            SignupReqDTO newUserDTO = SignupReqDTO.builder()
-                    .userName(oAuth2Response.getName())
-                    .userPw(password)
-                    .userEmail(oAuth2Response.getEmail())
-                    .role(UserRole.USER)
-                    .alias(oAuth2Response.getAlias())
-                    .build();
+            SignupReqDTO newUserDTO = new SignupReqDTO(
+                    oAuth2Response.getEmail(),
+                    password,
+                    UserRole.USER,
+                    oAuth2Response.getName(),
+                    oAuth2Response.getAlias(),
+                    null
+            );
 
             newUserDTO.encodePassword();
             userService.signup(newUserDTO);
@@ -95,13 +96,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         // OAuth로 인증된 사용자 정보를 기존의 DB에 갱신
         else {
-            UserUpdateReqDTO updatedUserDTO = UserUpdateReqDTO.builder()
-                    .userEmail(existedUser.get().getUserEmail())
-                    .userName(oAuth2Response.getName())
-                    .userPw(password)
-                    .alias(existedUser.get().getAlias())
-                    .phoneNum(existedUser.get().getPhoneNum())
-                    .build();
+            UserUpdateReqDTO updatedUserDTO = new UserUpdateReqDTO(
+                    existedUser.get().getUserEmail(),
+                    password,
+                    oAuth2Response.getName(),
+                    existedUser.get().getAlias(),
+                    existedUser.get().getPhoneNum());
 
             updatedUserDTO.encodePassword();
             userService.updateUserInfoFromOAuth(updatedUserDTO, existedUser.get().getUserEmail());
