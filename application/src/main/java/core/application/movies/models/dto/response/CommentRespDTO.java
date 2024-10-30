@@ -15,7 +15,7 @@ public class CommentRespDTO {
 	private Long commentId;
 
 	@Schema(description = "한줄평 작성 내용", example = "정말 재밌는 영화네요.")
-	private String content;
+	private String cmtContent;
 
 	@Schema(description = "좋아요 개수", example = "0")
 	private int like;
@@ -45,7 +45,7 @@ public class CommentRespDTO {
 		return CommentRespDTO.builder()
 			.commentId(comment.getCommentId())
 			.movieId(comment.getMovieId())
-			.content(comment.getContent())
+			.cmtContent(comment.getContent())
 			.alias(userAlias)
 			.like(comment.getLike())
 			.dislike(comment.getDislike())
