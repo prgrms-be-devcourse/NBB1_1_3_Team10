@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="core.application.movies.repositories.mapper.CachedMovieMapper">
+
+    <insert id="save" parameterType="core.application.movies.models.entities.CachedMovieEntity">
+        insert into cached_movie_table (movie_id, title, poster_url, genre, release_date, plot, running_time, actors,
+                                        director, dib_count, review_count, comment_count, sum_of_rating)
+        values (#{movieId}, #{title}, #{posterUrl}, #{genre}, #{releaseDate}, #{plot}, #{runningTime}, #{actors}, #{director},
+                #{dibCount}, #{reviewCount}, #{commentCount}, #{sumOfRating})
+    </insert>
+
+    <select id="findByMovieId" resultType="core.application.movies.models.entities.CachedMovieEntity">
+        select movie_id, title, poster_url, genre, release_date, plot, running_time, actors,
+               director, dib_count, review_count, comment_count, sum_of_rating
+        from cached_movie_table
+        where movie_id = #{movieId}
+    </select>
+
+    <select id="selectOnDibOrderDescend" resultType="core.application.movies.models.entities.CachedMovieEntity">
+        select movie_id, title, poster_url, genre, release_date, plot, running_time, actors,
+               director, dib_count, review_count, comment_count, sum_of_rating
+        from cached_movie_table
+        order by dib_count desc
+    </select>
+
+    <select id="selectOnDibOrderDescendLimit" resultType="core.application.movies.models.entities.CachedMovieEntity">
+        select movie_id, title, poster_url, genre, release_date, plot, running_time, actors,
+               director, dib_count, review_count, comment_count, sum_of_rating
+        from cached_movie_table
+        order by dib_count desc
+            limit #{num}
+    </select>
+
+    <select id="selectOnAVGRatingDescend" resultType="core.application.movies.models.entities.CachedMovieEntity">
+        select movie_id, title, poster_url, genre, release_date, plot, running_time, actors,
+               director, dib_count, review_count, comment_count, sum_of_rating
+        from cached_movie_table
+        order by round(sum_of_rating / comment_count, 1) desc
+    </select>
+
+    <select id="selectOnAVGRatingDescendLimit" resultType="core.application.movies.models.entities.CachedMovieEntity">
+        select movie_id, title, poster_url, genre, release_date, plot, running_time, actors,
+               director, dib_count, review_count, comment_count, sum_of_rating
+        from cached_movie_table
+        order by round(sum_of_rating / comment_count, 1) desc
+            limit #{num}
+    </select>
+
+    <select id="selectOnReviewCountDescend" resultType="core.application.movies.models.entities.CachedMovieEntity">
+        select movie_id, title, poster_url, genre, release_date, plot, running_time, actors,
+               director, dib_count, review_count, comment_count, sum_of_rating
+        from cached_movie_table
+        order by review_count desc
+            limit #{num}
+    </select>
+
+    <select id="findMoviesOnRatingDescendWithGenre" resultType="core.application.movies.models.entities.CachedMovieEntity">
+        select movie_id, title, poster_url, genre, release_date, plot, running_time, actors,
+               director, dib_count, review_count, comment_count, sum_of_rating
+        from cached_movie_table
+        where genre like concat('%', #{genre}, '%') and sum_of_rating > 0
+        order by round(sum_of_rating / comment_count, 1) desc
+            limit 10
+        offset #{offset}
+    </select>
+
+    <select id="selectGenreMovieCount">
+        select count(*)
+        from cached_movie_table
+        where genre like concat('%', #{genre}, '%')
+    </select>
+
+    <update id="update">
+        update cached_movie_table
+        set title=#{replacement.title},
+            poster_url=#{replacement.posterUrl},
+            genre=#{replacement.genre},
+            release_date=#{replacement.releaseDate},
+            plot=#{replacement.plot},
+            running_time=#{replacement.runningTime},
+            actors=#{replacement.actors},
+            director=#{replacement.director},
+            dib_count=#{replacement.dibCount},
+            review_count=#{replacement.reviewCount},
+            comment_count=#{replacement.commentCount},
+            sum_of_rating=#{replacement.sumOfRating}
+        where movie_id=#{movieId}
+    </update>
+
+    <delete id="delete">
+        delete from cached_movie_table
+        where movie_id = #{movieId}
+    </delete>
+</mapper>

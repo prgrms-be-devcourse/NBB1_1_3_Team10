@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="core.application.movies.repositories.mapper.CommentMapper">
+    <insert id="save" useGeneratedKeys="true" keyProperty="comment.commentId">
+        insert into comment_table (content, `like`, dislike, rating, movie_id, user_id)
+        values (#{comment.content}, #{comment.like}, #{comment.dislike}, #{comment.rating}, #{movieId}, #{userId})
+    </insert>
+
+    <select id="findByCommentId" resultType="core.application.movies.models.entities.CommentEntity">
+        select comment_id, content, `like`, dislike, rating, movie_id, user_id, created_at
+        from comment_table
+        where comment_id=#{commentId}
+    </select>
+
+    <select id="findByMovieIdAndUserId" resultType="core.application.movies.models.entities.CommentEntity">
+        select comment_id, content, `like`, dislike, rating, movie_id, user_id, created_at
+        from comment_table
+        where movie_id=#{movieId} and user_id=#{userId}
+    </select>
+
+    <select id="findByMovieId" resultType="core.application.movies.models.dto.response.CommentRespDTO">
+        select c.comment_id, c.content, c.`like`, c.dislike, c.rating, c.movie_id, u.alias, c.created_at,
+            case
+                when l.comment_like_id is not null then true
+                else false
+            end as isLiked,
+            case
+                when d.comment_dislike_id is not null then true
+                else false
+            end as isDisliked
+        from comment_table as c
+        left join
+            comment_like_table as l
+            on c.comment_id=l.comment_id
+            and l.user_id=#{userId}
+        left join
+            comment_dislike_table as d
+            on c.comment_id=d.comment_id
+            and d.user_id=#{userId}
+        left join
+            user_table as u
+            on c.user_id=u.user_id
+        where movie_id=#{movieId}
+        limit 10
+        offset #{offset}
+    </select>
+
+    <select id="findByMovieIdOnDateDescend" resultType="core.application.movies.models.dto.response.CommentRespDTO">
+        select c.comment_id, c.content, c.`like`, c.dislike, c.rating, c.movie_id, u.alias, c.created_at,
+            case
+                when l.comment_like_id is not null then true
+                else false
+            end as isLiked,
+            case
+                when d.comment_dislike_id is not null then true
+                else false
+            end as isDisliked
+        from comment_table as c
+        left join
+            comment_like_table as l
+            on c.comment_id=l.comment_id
+            and l.user_id=#{userId}
+        left join
+            comment_dislike_table as d
+            on c.comment_id=d.comment_id
+            and d.user_id=#{userId}
+        left join
+            user_table as u
+            on c.user_id=u.user_id
+        where movie_id=#{movieId}
+        order by created_at desc
+        limit 10
+        offset #{offset}
+    </select>
+
+    <select id="findByMovieIdOnLikeDescend" resultType="core.application.movies.models.dto.response.CommentRespDTO">
+        select c.comment_id, c.content, c.`like`, c.dislike, c.rating, c.movie_id, u.alias, c.created_at,
+            case
+                when l.comment_like_id is not null then true
+                else false
+            end as isLiked,
+            case
+                when d.comment_dislike_id is not null then true
+                else false
+            end as isDisliked
+        from comment_table as c
+        left join
+            comment_like_table as l
+            on c.comment_id=l.comment_id
+            and l.user_id=#{userId}
+        left join
+            comment_dislike_table as d
+            on c.comment_id=d.comment_id
+            and d.user_id=#{userId}
+        left join
+            user_table as u
+        on c.user_id=u.user_id
+        where movie_id=#{movieId}
+        order by `like` desc
+        limit 10
+        offset #{offset}
+    </select>
+
+    <select id="findByMovieIdOnDislikeDescend" resultType="core.application.movies.models.dto.response.CommentRespDTO">
+        select c.comment_id, c.content, c.`like`, c.dislike, c.rating, c.movie_id, u.alias, c.created_at,
+            case
+                when l.comment_like_id is not null then true
+                else false
+            end as isLiked,
+            case
+                when d.comment_dislike_id is not null then true
+                else false
+            end as isDisliked
+        from comment_table as c
+        left join
+            comment_like_table as l
+            on c.comment_id=l.comment_id
+            and l.user_id=#{userId}
+        left join
+            comment_dislike_table as d
+            on c.comment_id=d.comment_id
+            and d.user_id=#{userId}
+        left join
+            user_table as u
+            on c.user_id=u.user_id
+        where movie_id=#{movieId}
+        order by dislike desc
+        limit 10
+        offset #{offset}
+    </select>
+
+
+    <select id="selectAll" resultType="core.application.movies.models.entities.CommentEntity">
+        select comment_id, content, `like`, dislike, rating, movie_id, user_id, created_at
+        from comment_table
+    </select>
+
+    <select id="countByMovieId" resultType="int">
+        select count(*) from comment_table
+        where movie_id = #{movieId}
+    </select>
+
+    <update id="update">
+        update comment_table
+        set content=#{content},
+            `like`=#{like},
+            dislike=#{dislike},
+            rating=#{rating}
+        where comment_id=#{commentId}
+    </update>
+
+    <delete id="delete">
+        delete from comment_table
+        where comment_id=#{commentId}
+    </delete>
+</mapper>
