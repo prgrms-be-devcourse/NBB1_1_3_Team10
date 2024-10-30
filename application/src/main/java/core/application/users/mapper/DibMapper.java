@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @Mapper
 public interface DibMapper {
-    int saveNewDib(@Param("userId") UUID userId, @Param("movieId") String movieId);
+    void saveNewDib(@Param("userId") UUID userId, @Param("movieId") String movieId);
     Optional<DibEntity> findByDibId(@Param("dibId") Long id);
     Optional<DibEntity> findByUserIdAndMovieId(@Param("userId") UUID userId, @Param("movieId") String movieId);
     Long countMovie(@Param("movieId") String movieId);
