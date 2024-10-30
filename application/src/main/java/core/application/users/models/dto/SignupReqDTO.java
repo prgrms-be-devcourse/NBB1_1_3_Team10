@@ -43,14 +43,15 @@ public class SignupReqDTO {
 
     // UserDTO -> UserEntity 변환 메서드
     public UserEntity toEntity() {
-        return UserEntity.builder()
-                .userEmail(this.userEmail)
-                .userPw(this.userPw)
-                .role(this.role)
-                .alias(this.alias)
-                .phoneNum(this.phoneNum)
-                .userName(this.userName)
-                .build();
+        return new UserEntity(
+                null,
+                this.userEmail,
+                this.userPw,
+                this.role,
+                this.alias,
+                this.phoneNum,
+                this.userName
+        );
     }
 
     public void encodePassword() {

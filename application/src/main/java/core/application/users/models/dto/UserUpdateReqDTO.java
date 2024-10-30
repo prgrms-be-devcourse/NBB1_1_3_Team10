@@ -30,13 +30,15 @@ public class UserUpdateReqDTO {
 
     // UserDTO -> UserEntity 변환 메서드
     public UserEntity toEntity() {
-        return UserEntity.builder()
-                .userEmail(this.userEmail)
-                .userPw(this.userPw)
-                .alias(this.alias)
-                .phoneNum(this.phoneNum)
-                .userName(this.userName)
-                .build();
+        return new UserEntity(
+                null,
+                this.userEmail,
+                this.userPw,
+                null,
+                this.alias,
+                this.phoneNum,
+                this.userName
+        );
     }
 
     public void encodePassword() {
