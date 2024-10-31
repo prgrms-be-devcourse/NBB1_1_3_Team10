@@ -1,20 +1,17 @@
-package core.application.reviews.models.dto.response.comments;
+package core.application.reviews.models.dto.response.comments
 
-import java.time.*;
-import java.util.*;
-import lombok.*;
-import lombok.experimental.*;
+import lombok.experimental.Accessors
+import java.time.Instant
+import java.util.*
 
-@Data
 @Accessors(chain = true)
-public class CommonCommentRespDTO {
-
-    private Long reviewCommentId;
-    private Long groupId;
-    private Long commentRef;
-    private UUID userId;
-    private String content;
-    private int likeCount;
-    private Instant createdAt;
-    private boolean isUpdated;
-}
+data class CommonCommentRespDTO(
+    val reviewCommentId: Long,
+    val groupId: Long,
+    val commentRef: Long,
+    val userId: UUID,
+    val content: String,
+    val createdAt: Instant,
+    val likeCount: Int? = 0,
+    val isUpdated: Boolean? = false
+)

@@ -1,11 +1,8 @@
-package core.application.reviews.models.dto.response;
+package core.application.reviews.models.dto.response
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.AllArgsConstructor
+import lombok.Data
 
-@Data
-@AllArgsConstructor
-public class MessageRespDTO {
-
-    private String message;
-}
+data class MessageRespDTO(
+    val message: String
+)
