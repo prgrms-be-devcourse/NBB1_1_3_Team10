@@ -1,14 +1,13 @@
-package core.application.movies.repositories.mapper;
+package core.application.movies.repositories.mapper
 
-import java.util.UUID;
-
-import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Mapper
+import java.util.*
 
 @Mapper
-public interface CommentDislikeMapper {
-	void save(Long commentId, UUID userId);
+interface CommentDislikeMapper {
+    fun save(commentId: Long?, userId: UUID?)
 
-	int countLikeByUser(Long commentId, UUID userId);
+    fun countLikeByUser(commentId: Long?, userId: UUID?): Int
 
-	void delete(Long commentId, UUID userId);
+    fun delete(commentId: Long?, userId: UUID?)
 }

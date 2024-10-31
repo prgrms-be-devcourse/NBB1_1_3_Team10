@@ -1,81 +1,66 @@
-package core.application.movies.repositories.movie.mybatis;
+package core.application.movies.repositories.movie.mybatis
 
-import core.application.movies.repositories.movie.CachedMovieRepository;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.context.annotation.Profile;
-import org.springframework.data.domain.Page;
-
-import core.application.movies.models.entities.CachedMovieEntity;
-import core.application.movies.repositories.mapper.CachedMovieMapper;
-import lombok.RequiredArgsConstructor;
-
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Repository;
+import core.application.movies.models.entities.CachedMovieEntity
+import core.application.movies.repositories.mapper.CachedMovieMapper
+import core.application.movies.repositories.movie.CachedMovieRepository
+import org.springframework.context.annotation.Profile
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.stereotype.Repository
+import org.springframework.beans.factory.annotation.Autowired
+import java.util.*
 
 @Repository
-@RequiredArgsConstructor
 @Profile("mybatis")
-public class MybatisCachedMovieRepository implements CachedMovieRepository {
+class MybatisCachedMovieRepository @Autowired constructor(
+    private val mapper: CachedMovieMapper
+) : CachedMovieRepository {
 
-	private final CachedMovieMapper mapper;
+    override fun saveNewMovie(movie: CachedMovieEntity?): CachedMovieEntity? {
+        mapper.save(movie)
+        return movie
+    }
 
-	@Override
-	public CachedMovieEntity saveNewMovie(CachedMovieEntity movie) {
-		mapper.save(movie);
-		return movie;
-	}
+    override fun findByMovieId(movieId: String?): Optional<CachedMovieEntity?>? {
+        return mapper.findByMovieId(movieId)
+    }
 
-	@Override
-	public Optional<CachedMovieEntity> findByMovieId(String movieId) {
-		return mapper.findByMovieId(movieId);
-	}
+    override fun selectOnDibOrderDescend(): List<CachedMovieEntity?>? {
+        return mapper.selectOnDibOrderDescend()
+    }
 
-	@Override
-	public List<CachedMovieEntity> selectOnDibOrderDescend() {
-		return mapper.selectOnDibOrderDescend();
-	}
+    override fun selectOnDibOrderDescend(num: Int): List<CachedMovieEntity?>? {
+        return mapper.selectOnDibOrderDescendLimit(num)
+    }
 
-	@Override
-	public List<CachedMovieEntity> selectOnDibOrderDescend(int num) {
-		return mapper.selectOnDibOrderDescendLimit(num);
-	}
+    override fun selectOnAVGRatingDescend(): List<CachedMovieEntity?>? {
+        return mapper.selectOnAVGRatingDescend()
+    }
 
-	@Override
-	public List<CachedMovieEntity> selectOnAVGRatingDescend() {
-		return mapper.selectOnAVGRatingDescend();
-	}
+    override fun selectOnAVGRatingDescend(num: Int): List<CachedMovieEntity?>? {
+        return mapper.selectOnAVGRatingDescendLimit(num)
+    }
 
-	@Override
-	public List<CachedMovieEntity> selectOnAVGRatingDescend(int num) {
-		return mapper.selectOnAVGRatingDescendLimit(num);
-	}
+    override fun selectOnReviewCountDescend(num: Int): List<CachedMovieEntity?>? {
+        return mapper.selectOnReviewCountDescend(num)
+    }
 
-	@Override
-	public List<CachedMovieEntity> selectOnReviewCountDescend(int num) {
-		return mapper.selectOnReviewCountDescend(num);
-	}
+    override fun findMoviesLikeGenreOrderByAvgRating(page: Int?, genre: String?): Page<CachedMovieEntity?>? {
+        val pageable: Pageable = PageRequest.of(page!!, 10)
+        val total: Int = mapper.selectGenreMovieCount(genre)
+        // find 변수를 non-nullable List로 초기화
+        val find: List<CachedMovieEntity?> = mapper.findMoviesOnRatingDescendWithGenre(page * 10, genre) ?: emptyList()
+        return PageImpl(find, pageable, total.toLong())
+    }
 
-	@Override
-	public Page<CachedMovieEntity> findMoviesLikeGenreOrderByAvgRating(int page, String genre) {
-		Pageable pageable = PageRequest.of(page, 10);
-		int total = mapper.selectGenreMovieCount(genre);
-		List<CachedMovieEntity> find = mapper.findMoviesOnRatingDescendWithGenre(page * 10,
-			genre);
-		return new PageImpl<>(find, pageable, total);
-	}
+    override fun editMovie(movieId: String?, replacement: CachedMovieEntity?): CachedMovieEntity? {
+        mapper.update(movieId, replacement)
+        return replacement
+    }
 
-	@Override
-	public CachedMovieEntity editMovie(String movieId, CachedMovieEntity replacement) {
-		mapper.update(movieId, replacement);
-		return replacement;
-	}
-
-	@Override
-	public void deleteMovie(String movieId) {
-		mapper.delete(movieId);
-	}
+    override fun deleteMovie(movieId: String?) {
+        mapper.delete(movieId)
+    }
 }

@@ -1,35 +1,31 @@
-package core.application.movies.repositories.mapper;
+package core.application.movies.repositories.mapper
 
-import java.util.List;
-import java.util.Optional;
-
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-
-import core.application.movies.models.entities.CachedMovieEntity;
+import core.application.movies.models.entities.CachedMovieEntity
+import org.apache.ibatis.annotations.Mapper
+import org.apache.ibatis.annotations.Param
+import java.util.*
 
 @Mapper
-public interface CachedMovieMapper {
+interface CachedMovieMapper {
+    fun save(movie: CachedMovieEntity?)
 
-	void save(CachedMovieEntity movie);
+    fun findByMovieId(movieId: String?): Optional<CachedMovieEntity?>?
 
-	Optional<CachedMovieEntity> findByMovieId(String movieId);
+    fun selectOnDibOrderDescend(): List<CachedMovieEntity?>?
 
-	List<CachedMovieEntity> selectOnDibOrderDescend();
+    fun selectOnDibOrderDescendLimit(num: Int): List<CachedMovieEntity?>?
 
-	List<CachedMovieEntity> selectOnDibOrderDescendLimit(int num);
+    fun selectOnAVGRatingDescend(): List<CachedMovieEntity?>?
 
-	List<CachedMovieEntity> selectOnAVGRatingDescend();
+    fun selectOnAVGRatingDescendLimit(num: Int): List<CachedMovieEntity?>?
 
-	List<CachedMovieEntity> selectOnAVGRatingDescendLimit(int num);
+    fun selectOnReviewCountDescend(num: Int): List<CachedMovieEntity?>?
 
-	List<CachedMovieEntity> selectOnReviewCountDescend(int num);
+    fun findMoviesOnRatingDescendWithGenre(offset: Int, genre: String?): List<CachedMovieEntity?>?
 
-	List<CachedMovieEntity> findMoviesOnRatingDescendWithGenre(int offset, String genre);
+    fun selectGenreMovieCount(genre: String?): Int
 
-	int selectGenreMovieCount(String genre);
+    fun update(@Param("movieId") movieId: String?, @Param("replacement") replacement: CachedMovieEntity?)
 
-	void update(@Param("movieId") String movieId, @Param("replacement") CachedMovieEntity replacement);
-
-	void delete(String movieId);
+    fun delete(movieId: String?)
 }

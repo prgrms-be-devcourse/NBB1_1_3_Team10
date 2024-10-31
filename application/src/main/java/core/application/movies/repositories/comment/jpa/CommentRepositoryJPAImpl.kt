@@ -1,76 +1,68 @@
-package core.application.movies.repositories.comment.jpa;
+package core.application.movies.repositories.comment.jpa
 
-import core.application.movies.models.dto.response.CommentRespDTO;
-import core.application.movies.models.entities.CommentEntity;
-import core.application.movies.repositories.comment.CommentRepository;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Profile;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Repository;
+import core.application.movies.models.dto.response.CommentRespDTO
+import core.application.movies.models.entities.CommentEntity
+import core.application.movies.repositories.comment.CommentRepository
+import lombok.RequiredArgsConstructor
+import org.springframework.context.annotation.Profile
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.stereotype.Repository
+import java.util.*
 
 @Repository
 @RequiredArgsConstructor
 @Profile("jpa")
-public class CommentRepositoryJPAImpl implements CommentRepository {
+class CommentRepositoryJPAImpl(
+    private val jpaRepository: JpaCommentRepository
+) : CommentRepository {
 
-    private final JpaCommentRepository jpaRepository;
-
-    @Override
-    public CommentEntity saveNewComment(String movieId, UUID userId, CommentEntity comment) {
-        return jpaRepository.save(comment);
+    override fun saveNewComment(movieId: String?, userId: UUID?, comment: CommentEntity?): CommentEntity? {
+        return comment?.let { jpaRepository.save(it) }
     }
 
-    @Override
-    public Optional<CommentEntity> findByCommentId(Long commentId) {
-        return jpaRepository.findById(commentId);
+    override fun findByCommentId(commentId: Long?): Optional<CommentEntity?>? {
+        return commentId?.let { jpaRepository.findById(it) }
     }
 
-    @Override
-    public Boolean existsByMovieIdAndUserId(String movieId, UUID userId) {
-        return jpaRepository.existsByMovieIdAndUserId(movieId, userId);
+    override fun existsByMovieIdAndUserId(movieId: String?, userId: UUID?): Boolean? {
+        return jpaRepository.existsByMovieIdAndUserId(movieId, userId)
     }
 
-    @Override
-    public Page<CommentRespDTO> findByMovieId(String movieId, UUID userId, int page) {
-        return jpaRepository.findByMovieId(movieId, userId, PageRequest.of(page, 10));
+    override fun findByMovieId(movieId: String?, userId: UUID?, page: Int): Page<CommentRespDTO?>? {
+        return jpaRepository.findByMovieId(movieId, userId, PageRequest.of(page, 10))
     }
 
-    @Override
-    public Page<CommentRespDTO> findByMovieIdOnDateDescend(String movieId, UUID userId, int page) {
-        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return jpaRepository.findByMovieIdOrderBy(movieId, userId, pageable);
+    override fun findByMovieIdOnDateDescend(movieId: String?, userId: UUID?, page: Int): Page<CommentRespDTO?>? {
+        val pageable: Pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
+        return jpaRepository.findByMovieIdOrderBy(movieId, userId, pageable)
     }
 
-    @Override
-    public Page<CommentRespDTO> findByMovieIdOnLikeDescend(String movieId, UUID userId, int page) {
-        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "like"));
-        return jpaRepository.findByMovieIdOrderBy(movieId, userId, pageable);
+    override fun findByMovieIdOnLikeDescend(movieId: String?, userId: UUID?, page: Int): Page<CommentRespDTO?>? {
+        val pageable: Pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "like"))
+        return jpaRepository.findByMovieIdOrderBy(movieId, userId, pageable)
     }
 
-    @Override
-    public Page<CommentRespDTO> findByMovieIdOnDislikeDescend(String movieId, UUID userId, int page) {
-        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "dislike"));
-        return jpaRepository.findByMovieIdOrderBy(movieId, userId, pageable);
+    override fun findByMovieIdOnDislikeDescend(movieId: String?, userId: UUID?, page: Int): Page<CommentRespDTO?>? {
+        val pageable: Pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "dislike"))
+        return jpaRepository.findByMovieIdOrderBy(movieId, userId, pageable)
     }
 
-    @Override
-    public List<CommentEntity> selectAll() {
-        return jpaRepository.findAll();
+    override fun selectAll(): List<CommentEntity?>? {
+        return jpaRepository.findAll()
     }
 
-    @Override
-    public void update(CommentEntity comment) {
-        jpaRepository.save(comment);
+    override fun update(comment: CommentEntity?) {
+        if (comment != null) {
+            jpaRepository.save(comment)
+        }
     }
 
-    @Override
-    public void deleteComment(Long commentId) {
-        jpaRepository.deleteById(commentId);
+    override fun deleteComment(commentId: Long?) {
+        if (commentId != null) {
+            jpaRepository.deleteById(commentId)
+        }
     }
 }

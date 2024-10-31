@@ -1,12 +1,11 @@
-package core.application.movies.repositories.comment;
+package core.application.movies.repositories.comment
 
-import java.util.UUID;
+import java.util.*
 
-public interface CommentDislikeRepository {
+interface CommentDislikeRepository {
+    fun saveCommentDislike(commentId: Long?, userId: UUID?)
 
-    void saveCommentDislike(Long commentId, UUID userId);
+    fun isExistDislike(commentId: Long?, userId: UUID?): Boolean
 
-    boolean isExistDislike(Long commentId, UUID userId);
-
-    void deleteCommentDislike(Long commentId, UUID userId);
+    fun deleteCommentDislike(commentId: Long?, userId: UUID?)
 }
