@@ -1,17 +1,17 @@
-package core.application.security.model;
+package core.application.security.model
 
-public interface OAuth2Response {
+interface OAuth2Response {
     // Resource Server
-    String getProvider();
+    val provider: String?
 
     // Resource Server에서 제공해주는 id
-    String getProviderId();
+    val providerId: String?
 
-    String getEmail();
+    val email: String?
 
-    String getName();
+    val name: String?
 
-    String getAlias();
+    val alias: String?
 
-    String toString();
+    override fun toString(): String
 }
