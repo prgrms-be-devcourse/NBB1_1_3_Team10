@@ -1,10 +1,10 @@
-package core.application.movies.models.dto.response;
+package core.application.movies.models.dto.response
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.AllArgsConstructor
+import lombok.Data
 
 @Data
 @AllArgsConstructor
-public class CommentReactionRespDTO {
-	private String message;
+class CommentReactionRespDTO {
+    private val message: String? = null
 }
