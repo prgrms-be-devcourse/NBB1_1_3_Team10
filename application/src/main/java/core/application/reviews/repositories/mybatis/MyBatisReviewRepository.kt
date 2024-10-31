@@ -26,20 +26,20 @@ class MyBatisReviewRepository(
     override fun saveNewReview(movieId: String, userId: UUID, review: ReviewEntity): ReviewEntity {
         review.createdAt = Instant.now()
         mapper.saveNewReview(movieId, userId, review)
-        return mapper.findByReviewId(review.reviewId).orElseThrow()
+        return mapper.findByReviewId(review.reviewId).get()
     }
 
     /**
      * {@inheritDoc}
      */
-    override fun findByReviewId(reviewId: Long): Optional<ReviewEntity> {
+    override fun findByReviewId(reviewId: Long): Optional<ReviewEntity?> {
         return mapper.findByReviewId(reviewId)
     }
 
     /**
      * {@inheritDoc}
      */
-    override fun findByReviewIdWithoutContent(reviewId: Long): Optional<ReviewEntity> {
+    override fun findByReviewIdWithoutContent(reviewId: Long): Optional<ReviewEntity?> {
         return mapper.findByReviewIdWithoutContent(reviewId)
     }
 
@@ -117,13 +117,13 @@ class MyBatisReviewRepository(
     override fun editReviewInfo(reviewId: Long, replacement: ReviewEntity): ReviewEntity {
         replacement.updated()
         mapper.editReviewInfo(reviewId, replacement)
-        return mapper.findByReviewId(reviewId).orElseThrow()
+        return mapper.findByReviewId(reviewId).get()
     }
 
     @Transactional
     override fun updateReviewLikes(reviewId: Long, givenLikes: Int): ReviewEntity {
         mapper.updateLikes(reviewId, givenLikes)
-        return mapper.findByReviewId(reviewId).orElseThrow()
+        return mapper.findByReviewId(reviewId).get()
     }
 
     /**

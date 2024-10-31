@@ -1,185 +1,186 @@
-package core.application.reviews.repositories.jpa;
+package core.application.reviews.repositories.jpa
 
-import core.application.reviews.exceptions.*;
-import core.application.reviews.models.entities.*;
-import core.application.reviews.repositories.*;
-import core.application.reviews.repositories.jpa.repositories.*;
-import java.util.*;
-import lombok.*;
-import lombok.extern.slf4j.*;
-import org.springframework.context.annotation.*;
-import org.springframework.stereotype.*;
+import core.application.reviews.exceptions.NoReviewCommentFoundException
+import core.application.reviews.models.entities.ReviewCommentEntity
+import core.application.reviews.repositories.ReviewCommentRepository
+import core.application.reviews.repositories.jpa.repositories.JpaReviewCommentRepository
+import org.springframework.context.annotation.Profile
+import org.springframework.stereotype.Repository
+import java.util.*
 
-@Slf4j
 @Repository
 @Profile("jpa")
-@RequiredArgsConstructor
-public class ReviewCommentRepositoryJpaImpl implements ReviewCommentRepository {
-
-    private final JpaReviewCommentRepository jpaRepo;
+class ReviewCommentRepositoryJpaImpl (
+    private val jpaRepo: JpaReviewCommentRepository
+) : ReviewCommentRepository {
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public ReviewCommentEntity saveNewReviewComment(ReviewCommentEntity reviewComment) {
-        return jpaRepo.save(reviewComment);
+    override fun saveNewReviewComment(reviewComment: ReviewCommentEntity): ReviewCommentEntity? {
+        return jpaRepo.save(reviewComment)
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public ReviewCommentEntity saveNewParentReviewComment(Long reviewId, UUID userId,
-            ReviewCommentEntity reviewComment) {
-        ReviewCommentEntity data = ReviewCommentEntity.builder()
-                .reviewId(reviewId)
-                .userId(userId)
-                .content(reviewComment.getContent())
-                .commentRef(reviewComment.getCommentRef())
-                .isUpdated(false)
-                .build();
-
-        return jpaRepo.save(data);
+    override fun saveNewParentReviewComment(
+        reviewId: Long,
+        userId: UUID,
+        reviewComment: ReviewCommentEntity
+    ): ReviewCommentEntity? {
+        val data: ReviewCommentEntity = ReviewCommentEntity(
+            reviewId = reviewId,
+            userId = userId,
+            content = reviewComment.content,
+            commentRef = reviewComment.commentRef,
+            isUpdated = false
+        )
+        return jpaRepo.save(data)
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public ReviewCommentEntity saveNewChildReviewComment(Long groupId, UUID userId,
-            ReviewCommentEntity reviewComment) {
+    override fun saveNewChildReviewComment(
+        groupId: Long,
+        userId: UUID,
+        reviewComment: ReviewCommentEntity
+    ): ReviewCommentEntity? {
+        val parent = jpaRepo.findById(groupId).orElseThrow {
+            NoReviewCommentFoundException(
+                groupId
+            )
+        }
 
-        ReviewCommentEntity parent = jpaRepo.findById(groupId).orElseThrow(
-                () -> new NoReviewCommentFoundException(groupId)
-        );
+        val data: ReviewCommentEntity = ReviewCommentEntity(
+            reviewId = parent?.reviewId,
+            userId = userId,
+            content = reviewComment.content,
+            groupId = groupId,
+            commentRef = reviewComment.commentRef,
+            isUpdated = false
+        )
 
-        ReviewCommentEntity data = ReviewCommentEntity.builder()
-                .reviewId(parent.getReviewId())
-                .userId(userId)
-                .content(reviewComment.getContent())
-                .groupId(groupId)
-                .commentRef(reviewComment.getCommentRef())
-                .isUpdated(false)
-                .build();
-
-        return jpaRepo.save(data);
+        return jpaRepo.save(data)
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public Optional<ReviewCommentEntity> findByReviewCommentId(Long reviewCommentId) {
-        return jpaRepo.findById(reviewCommentId);
+    override fun findByReviewCommentId(reviewCommentId: Long): Optional<ReviewCommentEntity?> {
+        return jpaRepo.findById(reviewCommentId)
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public List<ReviewCommentEntity> findParentCommentByReviewId(Long reviewId,
-            int offset, int num) {
-        return jpaRepo.findParentCommentByReviewId(reviewId, offset, num);
+    override fun findParentCommentByReviewId(
+        reviewId: Long,
+        offset: Int, num: Int
+    ): List<ReviewCommentEntity?>? {
+        return jpaRepo.findParentCommentByReviewId(reviewId, offset, num)
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public List<ReviewCommentEntity> findParentCommentByReviewIdOnDateDescend(Long reviewId,
-            int offset, int num) {
-        return jpaRepo.findParentCommentByReviewId(reviewId, offset, num);
+    override fun findParentCommentByReviewIdOnDateDescend(
+        reviewId: Long,
+        offset: Int, num: Int
+    ): List<ReviewCommentEntity> {
+        return jpaRepo.findParentCommentByReviewId(reviewId, offset, num)
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public List<ReviewCommentEntity> findParentCommentByReviewIdOnLikeDescend(Long reviewId,
-            int offset, int num) {
-        return jpaRepo.findParentCommentByReviewIdOnLikeDescend(reviewId, offset, num);
+    override fun findParentCommentByReviewIdOnLikeDescend(
+        reviewId: Long,
+        offset: Int, num: Int
+    ): List<ReviewCommentEntity> {
+        return jpaRepo.findParentCommentByReviewIdOnLikeDescend(reviewId, offset, num)
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public long countParentCommentByReviewId(Long reviewId) {
-        return jpaRepo.countParentCommentByReviewId(reviewId);
+    override fun countParentCommentByReviewId(reviewId: Long): Long {
+        return jpaRepo.countParentCommentByReviewId(reviewId)
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public List<ReviewCommentEntity> findChildCommentsByGroupId(Long groupId, int offset, int num) {
-        return jpaRepo.findChildCommentsByGroupId(groupId, offset, num);
+    override fun findChildCommentsByGroupId(groupId: Long, offset: Int, num: Int): List<ReviewCommentEntity> {
+        return jpaRepo.findChildCommentsByGroupId(groupId, offset, num)
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public long countChildCommentByGroupId(Long groupId) {
-        return jpaRepo.countChildCommentByGroupId(groupId);
+    override fun countChildCommentByGroupId(groupId: Long): Long {
+        return jpaRepo.countChildCommentByGroupId(groupId)
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public List<ReviewCommentEntity> selectAllParentComments() {
-        return jpaRepo.selectAllParentComments();
+    override fun selectAllParentComments(): List<ReviewCommentEntity?>? {
+        return jpaRepo.selectAllParentComments()
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public List<ReviewCommentEntity> selectAll() {
-        return jpaRepo.findAll();
+    override fun selectAll(): List<ReviewCommentEntity?>? {
+        return jpaRepo.findAll()
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public ReviewCommentEntity editReviewCommentInfo(Long reviewCommentId,
-            ReviewCommentEntity replacement) {
-        return this.editReviewCommentInfo(reviewCommentId, replacement, true);
+    override fun editReviewCommentInfo(
+        reviewCommentId: Long,
+        replacement: ReviewCommentEntity
+    ): Optional<ReviewCommentEntity?> {
+        return this.editReviewCommentInfo(reviewCommentId, replacement, true)
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public ReviewCommentEntity editReviewCommentInfo(Long reviewCommentId,
-            ReviewCommentEntity replacement, boolean update) {
+    override fun editReviewCommentInfo(
+        reviewCommentId: Long,
+        replacement: ReviewCommentEntity, update: Boolean
+    ): Optional<ReviewCommentEntity?> {
+        val find = jpaRepo.findById(reviewCommentId)
+        if (find.isEmpty) {
+            throw NoReviewCommentFoundException(reviewCommentId)
+        }
+        val origin = find.get()
 
-        ReviewCommentEntity origin = jpaRepo.findById(reviewCommentId).orElseThrow(
-                () -> new NoReviewCommentFoundException(reviewCommentId)
-        );
+        origin.changeContent(replacement.content)
+        origin.changeCommentRef(replacement.commentRef)
+        origin.isUpdated = update
 
-        origin.changeContent(replacement.getContent());
-        origin.changeCommentRef(replacement.getCommentRef());
-        origin.setUpdated(update);
-
-        return jpaRepo.save(origin);
+        jpaRepo.save(origin)
+        return jpaRepo.findById(origin.reviewCommentId)
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
-    public ReviewCommentEntity updateReviewCommentLikes(Long reviewCommentId, int likes) {
+    override fun updateReviewCommentLikes(reviewCommentId: Long, likes: Int): Optional<ReviewCommentEntity?> {
+        val find = jpaRepo.findById(reviewCommentId)
+        if (find.isEmpty) {
+            throw NoReviewCommentFoundException(reviewCommentId)
+        }
+        val origin = find.get()
 
-        ReviewCommentEntity origin = jpaRepo.findById(reviewCommentId).orElseThrow(
-                () -> new NoReviewCommentFoundException(reviewCommentId)
-        );
+        origin.changeLikes(likes)
 
-        origin.changeLikes(likes);
-
-        return jpaRepo.save(origin);
+        jpaRepo.save(origin)
+        return jpaRepo.findById(origin.reviewCommentId)
     }
 }

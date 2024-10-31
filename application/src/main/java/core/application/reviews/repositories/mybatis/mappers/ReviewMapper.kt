@@ -1,72 +1,73 @@
-package core.application.reviews.repositories.mybatis.mappers;
+package core.application.reviews.repositories.mybatis.mappers
 
-import core.application.reviews.models.entities.*;
-import java.util.*;
-import org.apache.ibatis.annotations.*;
+import core.application.reviews.models.entities.ReviewEntity
+import org.apache.ibatis.annotations.Mapper
+import org.apache.ibatis.annotations.Param
+import java.util.*
 
 @Mapper
-public interface ReviewMapper {
+interface ReviewMapper {
+    fun saveNewReview(
+        @Param("movieId") movieId: String?,
+        @Param("userId") userId: UUID?,
+        @Param("review") review: ReviewEntity?
+    ): Int
 
-    int saveNewReview(
-            @Param("movieId") String movieId,
-            @Param("userId") UUID userId,
-            @Param("review") ReviewEntity review
-    );
+    fun findByReviewId(reviewId: Long?): Optional<ReviewEntity?>
 
-    Optional<ReviewEntity> findByReviewId(Long reviewId);
+    fun findByReviewIdWithoutContent(reviewId: Long?): Optional<ReviewEntity?>
 
-    Optional<ReviewEntity> findByReviewIdWithoutContent(Long reviewId);
+    fun findByMovieId(
+        @Param("movieId") movieId: String?,
+        @Param("offset") offset: Int,
+        @Param("num") num: Int
+    ): List<ReviewEntity>
 
-    List<ReviewEntity> findByMovieId(
-            @Param("movieId") String movieId,
-            @Param("offset") int offset,
-            @Param("num") int num
-    );
+    fun findByMovieIdOnDateDescend(
+        @Param("movieId") movieId: String?,
+        @Param("offset") offset: Int,
+        @Param("num") num: Int
+    ): List<ReviewEntity>
 
-    List<ReviewEntity> findByMovieIdOnDateDescend(
-            @Param("movieId") String movieId,
-            @Param("offset") int offset,
-            @Param("num") int num
-    );
+    fun findByMovieIdOnLikeDescend(
+        @Param("movieId") movieId: String?,
+        @Param("offset") offset: Int,
+        @Param("num") num: Int
+    ): List<ReviewEntity>
 
-    List<ReviewEntity> findByMovieIdOnLikeDescend(
-            @Param("movieId") String movieId,
-            @Param("offset") int offset,
-            @Param("num") int num
-    );
+    fun findByMovieIdWithoutContent(
+        @Param("movieId") movieId: String?,
+        @Param("offset") offset: Int,
+        @Param("num") num: Int
+    ): List<ReviewEntity>
 
-    List<ReviewEntity> findByMovieIdWithoutContent(
-            @Param("movieId") String movieId,
-            @Param("offset") int offset,
-            @Param("num") int num
-    );
+    fun findByMovieIdWithoutContentOnDateDescend(
+        @Param("movieId") movieId: String?,
+        @Param("offset") offset: Int,
+        @Param("num") num: Int
+    ): List<ReviewEntity>
 
-    List<ReviewEntity> findByMovieIdWithoutContentOnDateDescend(
-            @Param("movieId") String movieId,
-            @Param("offset") int offset,
-            @Param("num") int num
-    );
+    fun findByMovieIdWithoutContentOnLikeDescend(
+        @Param("movieId") movieId: String?,
+        @Param("offset") offset: Int,
+        @Param("num") num: Int
+    ): List<ReviewEntity>
 
-    List<ReviewEntity> findByMovieIdWithoutContentOnLikeDescend(
-            @Param("movieId") String movieId,
-            @Param("offset") int offset,
-            @Param("num") int num
-    );
+    fun countByMovieId(movieId: String?): Long
 
-    Long countByMovieId(String movieId);
+    fun findByUserId(userId: UUID?): List<ReviewEntity>
 
-    List<ReviewEntity> findByUserId(UUID userId);
+    fun selectAll(): List<ReviewEntity>
 
-    List<ReviewEntity> selectAll();
+    fun editReviewInfo(
+        @Param("reviewId") reviewId: Long?,
+        @Param("replacement") replacement: ReviewEntity?
+    ): Int
 
-    int editReviewInfo(
-            @Param("reviewId") Long reviewId,
-            @Param("replacement") ReviewEntity replacement);
+    fun updateLikes(
+        @Param("reviewId") reviewId: Long?,
+        @Param("givenLikes") givenLikes: Int
+    ): Int
 
-    int updateLikes(
-            @Param("reviewId") Long reviewId,
-            @Param("givenLikes") int givenLikes
-    );
-
-    void deleteReview(Long reviewId);
+    fun deleteReview(reviewId: Long?)
 }

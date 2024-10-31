@@ -69,7 +69,7 @@ class MyBatisReviewCommentRepository(
     /**
      * {@inheritDoc}
      */
-    override fun findByReviewCommentId(reviewCommentId: Long): Optional<ReviewCommentEntity> {
+    override fun findByReviewCommentId(reviewCommentId: Long): Optional<ReviewCommentEntity?> {
         return mapper.findByReviewCommentId(reviewCommentId)
     }
 
@@ -146,7 +146,7 @@ class MyBatisReviewCommentRepository(
     override fun editReviewCommentInfo(
         reviewCommentId: Long,
         replacement: ReviewCommentEntity
-    ): ReviewCommentEntity {
+    ): Optional<ReviewCommentEntity?> {
         return this.editReviewCommentInfo(reviewCommentId, replacement, true)
     }
 
@@ -156,16 +156,16 @@ class MyBatisReviewCommentRepository(
     override fun editReviewCommentInfo(
         reviewCommentId: Long,
         replacement: ReviewCommentEntity, update: Boolean
-    ): ReviewCommentEntity {
+    ): Optional<ReviewCommentEntity?> {
         val result = mapper.updateReviewCommentEntity(reviewCommentId, replacement, update)
-        return findByReviewCommentId(reviewCommentId).orElseThrow()
+        return findByReviewCommentId(reviewCommentId)
     }
 
     /**
      * {@inheritDoc}
      */
-    override fun updateReviewCommentLikes(reviewCommentId: Long, likes: Int): ReviewCommentEntity {
+    override fun updateReviewCommentLikes(reviewCommentId: Long, likes: Int): Optional<ReviewCommentEntity?> {
         val result = mapper.updateCommentLikes(reviewCommentId, likes)
-        return findByReviewCommentId(reviewCommentId).orElseThrow()
+        return findByReviewCommentId(reviewCommentId)
     }
 }
