@@ -13,11 +13,11 @@ import java.util.*
  * 사용자의 정보와 관련된 작업을 수행
  */
 interface UserService {
-    fun signup(userRequestDTO: SignupReqDTO?): MessageResponseDTO?
+    fun signup(userRequestDTO: SignupReqDTO): MessageResponseDTO?
 
-    fun updateUserInfo(userUpdateRequestDTO: UserUpdateReqDTO?): MessageResponseDTO?
+    fun updateUserInfo(userUpdateRequestDTO: UserUpdateReqDTO): MessageResponseDTO?
 
-    fun updateUserInfoFromOAuth(userUpdateRequestDTO: UserUpdateReqDTO?, userEmail: String?): MessageResponseDTO?
+    fun updateUserInfoFromOAuth(userUpdateRequestDTO: UserUpdateReqDTO, userEmail: String): MessageResponseDTO?
 
     fun deleteUser(): MessageResponseDTO?
 
