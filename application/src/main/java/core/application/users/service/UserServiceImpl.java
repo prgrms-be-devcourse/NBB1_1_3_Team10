@@ -8,6 +8,7 @@ import core.application.users.models.dto.UserDTO;
 import core.application.users.models.dto.SignupReqDTO;
 import core.application.users.models.dto.UserUpdateReqDTO;
 import core.application.users.models.entities.UserEntity;
+import core.application.users.models.entities.UserRole;
 import core.application.users.repositories.UserRepository;
 import java.util.Optional;
 import java.util.UUID;
@@ -83,14 +84,17 @@ public class UserServiceImpl implements UserService {
         }
 
         // 새로운 UserEntity를 기존 값과 DTO 값을 비교하여 생성
-        UserDTO updatedUserDTO = UserDTO.builder()
-                .userEmail(originUserEntity.get().getUserEmail())
-                .userId(originUserEntity.get().getUserId()) // 기존 userId 유지
-                .userPw(userUpdateRequestDTO.getUserPw() != null ? userUpdateRequestDTO.getUserPw() : originUserEntity.get().getUserPw()) // userPw 업데이트
-                .alias(userUpdateRequestDTO.getAlias() != null ? userUpdateRequestDTO.getAlias() : originUserEntity.get().getAlias()) // alias 업데이트
-                .phoneNum(userUpdateRequestDTO.getPhoneNum() != null ? userUpdateRequestDTO.getPhoneNum() : originUserEntity.get().getPhoneNum()) // phoneNum 업데이트
-                .userName(userUpdateRequestDTO.getUserName() != null ? userUpdateRequestDTO.getUserName() : originUserEntity.get().getUserName()) // userName 업데이트
-                .build();
+        UserDTO updatedUserDTO = new UserDTO(
+                originUserEntity.get().getUserId(), // 기존 userId 유지 -> update 할 사용자 찾을 때 사용
+                originUserEntity.get().getUserEmail(),
+                userUpdateRequestDTO.getUserPw() != null ? userUpdateRequestDTO.getUserPw() : originUserEntity.get().getUserPw(), // userPw 업데이트
+                originUserEntity.get().getRole(),
+                userUpdateRequestDTO.getAlias() != null ? userUpdateRequestDTO.getAlias() : originUserEntity.get().getAlias(), // alias 업데이트
+                userUpdateRequestDTO.getPhoneNum() != null ? userUpdateRequestDTO.getPhoneNum() : originUserEntity.get().getPhoneNum(), // phoneNum 업데이트
+                userUpdateRequestDTO.getUserName() != null ? userUpdateRequestDTO.getUserName() : originUserEntity.get().getUserName() // userName 업데이트
+        );
+
+        System.out.println(updatedUserDTO);
         updatedUserDTO.encodePassword();
 
         if (userRepository.editUserInfo(updatedUserDTO.toEntity()) == 1) {
@@ -118,15 +122,16 @@ public class UserServiceImpl implements UserService {
         }
 
         // 새로운 UserEntity를 기존 값과 DTO 값을 비교하여 생성
-        UserDTO updatedUserDTO = UserDTO.builder()
-                .userEmail(originUserEntity.get().getUserEmail())
-                .userId(originUserEntity.get().getUserId()) // 기존 userId 유지
-                .userPw(userUpdateRequestDTO.getUserPw() != null ? userUpdateRequestDTO.getUserPw() : originUserEntity.get().getUserPw()) // userPw 업데이트
-                .role(originUserEntity.get().getRole()) // 기존 role 유지
-                .alias(userUpdateRequestDTO.getAlias() != null ? userUpdateRequestDTO.getAlias() : originUserEntity.get().getAlias()) // alias 업데이트
-                .phoneNum(userUpdateRequestDTO.getPhoneNum() != null ? userUpdateRequestDTO.getPhoneNum() : originUserEntity.get().getPhoneNum()) // phoneNum 업데이트
-                .userName(userUpdateRequestDTO.getUserName() != null ? userUpdateRequestDTO.getUserName() : originUserEntity.get().getUserName()) // userName 업데이트
-                .build();
+        UserDTO updatedUserDTO = new UserDTO(
+                originUserEntity.get().getUserId(), // 기존 userId 유지
+                originUserEntity.get().getUserEmail(),
+                userUpdateRequestDTO.getUserPw() != null ? userUpdateRequestDTO.getUserPw() : originUserEntity.get().getUserPw(), // userPw 업데이트
+                originUserEntity.get().getRole(),
+                userUpdateRequestDTO.getAlias() != null ? userUpdateRequestDTO.getAlias() : originUserEntity.get().getAlias(), // alias 업데이트
+                userUpdateRequestDTO.getPhoneNum() != null ? userUpdateRequestDTO.getPhoneNum() : originUserEntity.get().getPhoneNum(), // phoneNum 업데이트
+                userUpdateRequestDTO.getUserName() != null ? userUpdateRequestDTO.getUserName() : originUserEntity.get().getUserName() // userName 업데이트
+        );
+
         updatedUserDTO.encodePassword();
 
         if (userRepository.editUserInfo(updatedUserDTO.toEntity()) == 1) {

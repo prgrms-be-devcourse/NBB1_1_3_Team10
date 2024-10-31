@@ -83,13 +83,15 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             newUserDTO.encodePassword();
             userService.signup(newUserDTO);
 
-            UserDTO oAuth2UserDTO = UserDTO.builder()
-                    .userName(oAuth2Response.getName())
-                    .userEmail(oAuth2Response.getEmail())
-                    .userPw(password)
-                    .role(UserRole.USER)
-                    .alias(oAuth2Response.getAlias())
-                    .build();
+            UserDTO oAuth2UserDTO = new UserDTO (
+                    null,
+                    oAuth2Response.getEmail(),
+                    password,
+                    UserRole.USER,
+                    oAuth2Response.getAlias(),
+                    null,
+                    oAuth2Response.getName()
+            );
 
             return new CustomOAuth2User(oAuth2UserDTO);
         }
@@ -108,12 +110,15 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
             Optional <UserEntity> editedUserEntity = userService.getUserByUserEmail(existedUser.get().getUserEmail());
 
-            UserDTO editedUserDTO = UserDTO.builder()
-                    .userName(editedUserEntity.get().getUserName())
-                    .userPw(editedUserEntity.get().getUserPw())
-                    .userEmail(editedUserEntity.get().getUserEmail())
-                    .role(UserRole.USER)
-                    .build();
+            UserDTO editedUserDTO = new UserDTO (
+                    null,
+                    editedUserEntity.get().getUserEmail(),
+                    editedUserEntity.get().getUserPw(),
+                    UserRole.USER,
+                    null,
+                    null,
+                    editedUserEntity.get().getUserName()
+            );
 
             return new CustomOAuth2User(editedUserDTO);
         }
