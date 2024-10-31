@@ -13,7 +13,7 @@ import java.util.*
  * 사용자의 인증 정보(이메일, 비밀번호, 권한 등)를 제공
  */
 @JvmRecord
-data class CustomUserDetails(val userEntity: UserEntity) : UserDetails {
+data class CustomUserDetails(@JvmField val userEntity: UserEntity) : UserDetails {
     override fun getAuthorities(): Collection<GrantedAuthority> {
         val collection: MutableCollection<GrantedAuthority> = ArrayList()
 
@@ -28,6 +28,18 @@ data class CustomUserDetails(val userEntity: UserEntity) : UserDetails {
 
     override fun getUsername(): String? {
         return userEntity.userName
+    }
+
+    fun getUserEmail(): String? {
+        return userEntity.userEmail
+    }
+
+    fun getUserId(): UUID? {
+        return userEntity.userId
+    }
+
+    fun getUserRole(): String? {
+        return userEntity.role.toString()
     }
 
     val userEmail: String

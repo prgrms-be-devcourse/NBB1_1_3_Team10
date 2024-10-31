@@ -114,8 +114,8 @@ public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) {
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        String userEmail = customUserDetails.getUserEmail();
-        UUID userId = customUserDetails.getUserId();
+        String userEmail = customUserDetails.userEntity.getUserEmail();
+        UUID userId = customUserDetails.userEntity.getUserId();
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();

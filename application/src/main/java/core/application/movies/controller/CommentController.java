@@ -73,7 +73,7 @@ public class CommentController {
             log.info("검증 오류 발생 : {}", bindingResult);
             throw new InvalidWriteCommentException(bindingResult.getAllErrors().get(0).getDefaultMessage());
         }
-        UserEntity user = userDetails.userEntity();
+        UserEntity user = userDetails.userEntity;
         CommentRespDTO commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, user, movieId);
         return ApiResponse.onCreateSuccess(commentRespDTO);
     }

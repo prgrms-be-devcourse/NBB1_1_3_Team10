@@ -94,7 +94,9 @@ class JwtTokenUtil(
             .expiration(Date(System.currentTimeMillis() + refreshTimeout * 24 * 60 * 60 * 1000L))
             .signWith(secretKey)
             .compact()
-        redisService.setValueWithTTL(userEmail, refreshToken) // Redis에 리프레시 토큰 저장
+        if (userEmail != null) {
+            redisService.setValueWithTTL(userEmail, refreshToken)
+        } // Redis에 리프레시 토큰 저장
         return refreshToken
     }
 }

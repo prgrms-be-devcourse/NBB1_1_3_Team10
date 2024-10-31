@@ -60,7 +60,7 @@ class UserServiceImpl
      * @return 수정 결과 메시지를 포함하는 MessageResponseDTO, 수정이 실패할 경우 예외 발생
      */
     override fun updateUserInfo(userUpdateRequestDTO: UserUpdateReqDTO): MessageResponseDTO? {
-        val userEmail = authenticatedUserInfo.authenticatedUserEmail
+        val userEmail = authenticatedUserInfo.getAuthenticatedUserEmail()
 
         // 요청 시 토큰의 userEmail과 다른 userEmail을 가지고 있는 사용자의 정보를 바꾸려고 할 때 예외 발생
         if (userEmail != userUpdateRequestDTO.userEmail) {
@@ -137,7 +137,7 @@ class UserServiceImpl
      * @return 삭제 결과 메시지를 포함하는 MessageResponseDTO, 삭제가 실패할 경우 예외 발생
      */
     override fun deleteUser(): MessageResponseDTO? {
-        val userId = authenticatedUserInfo.authenticatedUserId
+        val userId = authenticatedUserInfo.getAuthenticatedUserId()
         if (userRepository.deleteUser(userId) == 1) {
             return MessageResponseDTO(userId, "delete success")
         }

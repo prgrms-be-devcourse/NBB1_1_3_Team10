@@ -1,9 +1,9 @@
 package core.application.security.token
 
 interface RedisService {
-    fun setValueWithTTL(key: String?, value: String?)
+    fun setValueWithTTL(key: String, value: String)
 
-    fun getValue(key: String?): String?
+    fun getValue(key: String): String?
 
-    fun deleteValue(key: String?)
+    fun deleteValue(key: String)
 }

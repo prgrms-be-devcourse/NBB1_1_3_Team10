@@ -92,7 +92,7 @@ class UserController
     @Operation(summary = "Access Token 재발급")
     @GetMapping("/reissue") // 추후 반환 값에 수정
     fun reissueAccessToken(request: HttpServletRequest?, response: HttpServletResponse): ApiResponse<Message> {
-        val reissuedAccessToken = tokenService.reissueAccessToken(request)
+        val reissuedAccessToken = request?.let { tokenService.reissueAccessToken(it) }
 
         if (reissuedAccessToken != null) {
             response.setHeader("accessToken", reissuedAccessToken)
