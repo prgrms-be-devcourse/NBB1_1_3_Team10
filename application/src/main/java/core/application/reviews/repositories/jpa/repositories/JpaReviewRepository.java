@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.*;
 public interface JpaReviewRepository extends JpaRepository<ReviewEntity, Long> {
 
     @Query(" SELECT "
-            + " (r.reviewId, r.title, r.userId, r.movieId, r.like, r.createdAt, r.updatedAt) "
+            + " new ReviewEntity (r.reviewId, r.title, null, r.userId, r.movieId, r.like, r.createdAt, r.updatedAt) "
             + " FROM ReviewEntity r WHERE r.reviewId = :id")
     Optional<ReviewEntity> findByReviewIdWithoutContent(Long id);
 
