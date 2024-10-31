@@ -205,7 +205,7 @@ public class TokenService {
         String accessToken = request.getHeader("accessToken");
         String email = jwtUtil.getUserEmail(accessToken);
         if (isAccessTokenValid(accessToken)) {
-            redisService.deleteValue(jwtUtil.getUserEmail(email));
+            redisService.deleteValue(email);
         }
     }
 }

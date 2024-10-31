@@ -109,4 +109,10 @@ public class JWTFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         }
     }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.equals("/users/signin") || path.equals("/users/signup"); // /users/signin과 /users/signup 경로는 필터링 제외
+    }
 }
