@@ -1,245 +1,243 @@
-package core.application.movies.service;
+package core.application.movies.service
 
-import core.application.movies.repositories.movie.mybatis.MybatisCachedMovieRepository;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import core.application.movies.constant.Genre;
-import core.application.movies.constant.KmdbParameter;
-import core.application.movies.constant.MovieSearch;
-import core.application.movies.exception.NoMovieException;
-import core.application.movies.exception.NoSearchResultException;
-import core.application.movies.models.dto.response.MainPageMovieRespDTO;
-import core.application.movies.models.dto.response.MainPageMoviesRespDTO;
-import core.application.movies.models.dto.response.MovieDetailRespDTO;
-import core.application.movies.models.dto.response.MovieSearchRespDTO;
-import core.application.movies.models.entities.CachedMovieEntity;
-import core.application.movies.repositories.movie.CachedMovieRepository;
-import core.application.movies.repositories.movie.KmdbApiRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import core.application.movies.constant.Genre
+import core.application.movies.constant.KmdbParameter
+import core.application.movies.constant.MovieSearch
+import core.application.movies.exception.NoMovieException
+import core.application.movies.exception.NoSearchResultException
+import core.application.movies.models.dto.response.MainPageMovieRespDTO
+import core.application.movies.models.dto.response.MainPageMoviesRespDTO
+import core.application.movies.models.dto.response.MovieDetailRespDTO
+import core.application.movies.models.dto.response.MovieSearchRespDTO
+import core.application.movies.models.entities.CachedMovieEntity
+import core.application.movies.repositories.movie.CachedMovieRepository
+import core.application.movies.repositories.movie.KmdbApiRepository
+import lombok.RequiredArgsConstructor
+import lombok.extern.slf4j.Slf4j
+import org.hibernate.query.sqm.tree.SqmNode.log
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class MovieServiceImpl implements MovieService {
+class MovieServiceImpl(
+    private val movieRepository: CachedMovieRepository,
+    private val kmdbRepository: KmdbApiRepository
+) : MovieService {
 
-	@Value("${kmdb.api.key}")
-	private String apiKey;
-	@Value("${kmdb.api.default.image}")
-	private String defaultImgUrl;
-	private final String DEFAULT_MESSAGE = "알 수 없음";
-	private final CachedMovieRepository movieRepository;
-	private final KmdbApiRepository kmdbRepository;
+    @Value("\${kmdb.api.key}")
+    lateinit var apiKey: String
 
-	@Override
-	@Transactional(readOnly = true)
-	public MainPageMoviesRespDTO getMainPageMovieInfo() {
-		List<MainPageMovieRespDTO> ratingOrder = movieRepository.selectOnAVGRatingDescend(10).stream()
-			.map(MainPageMovieRespDTO::from)
-			.toList();
+    @Value("\${kmdb.api.default.image}")
+    lateinit var defaultImgUrl: String
 
-		List<MainPageMovieRespDTO> dibOrder = movieRepository.selectOnDibOrderDescend(10).stream()
-			.map(MainPageMovieRespDTO::from)
-			.toList();
+    private val DEFAULT_MESSAGE = "알 수 없음"
 
-		List<MainPageMovieRespDTO> reviewOrder = movieRepository.selectOnReviewCountDescend(10).stream()
-			.map(MainPageMovieRespDTO::from)
-			.toList();
+    @Transactional(readOnly = true)
+    override fun getMainPageMovieInfo(): MainPageMoviesRespDTO {
+        val ratingOrder = movieRepository.selectOnAVGRatingDescend(10)
+            ?.map { it?.let { it1 -> MainPageMovieRespDTO.from(it1) } }
+        val dibOrder = movieRepository.selectOnDibOrderDescend(10)
+            ?.map { it?.let { it1 -> MainPageMovieRespDTO.from(it1) } }
+        val reviewOrder = movieRepository.selectOnReviewCountDescend(10)
+            ?.map { it?.let { it1 -> MainPageMovieRespDTO.from(it1) } }
 
-		return MainPageMoviesRespDTO.of(dibOrder, ratingOrder, reviewOrder);
-	}
+        return MainPageMoviesRespDTO.of(dibOrder, ratingOrder, reviewOrder)
+    }
 
-	@Override
-	public Page<MovieSearchRespDTO> searchMovies(Integer page, MovieSearch sort, String query) {
-		Map<KmdbParameter, String> params = new HashMap<>();
-		params.put(KmdbParameter.START_COUNT, String.valueOf(page * 10));
-		params.put(KmdbParameter.SORT, sort.SORT);
-		params.put(KmdbParameter.QUERY, query);
+    override fun searchMovies(page: Int?, sort: MovieSearch?, query: String?): Page<MovieSearchRespDTO?>? {
+        val params = mutableMapOf(
+            KmdbParameter.START_COUNT to (page?.times(10) ?: 0).toString(), // page가 null일 경우 0으로 설정
+            KmdbParameter.SORT to (sort?.SORT ?: MovieSearch.RANK.SORT), // sort가 null일 경우 기본값 RANK 사용
+            KmdbParameter.QUERY to query
+        )
 
-		JSONObject jsonResponse = kmdbRepository.getResponse(params);
-		List<MovieSearchRespDTO> searchResult = new ArrayList<>();
-		try {
-			Pageable pageable = PageRequest.of(page, 10);
-			int totalMovie = jsonResponse.optInt("TotalCount");
-			parseMoviesFromMovieArray(
-				parseMovieArrayFromJsonResponse(jsonResponse),
-				searchResult);
-			return new PageImpl<>(searchResult, pageable, totalMovie);
-		} catch (JSONException e) {
-			log.info("[MovieService.searchMovies] '{}'에 해당하는 검색 결과가 존재하지 않음.", query);
-			throw new NoSearchResultException("'" + query + "'에 해당하는 영화가 없습니다.");
-		}
-	}
 
-	@Override
-	@Transactional(readOnly = true)
-	public Page<MovieSearchRespDTO> getMoviesWithGenreRatingOrder(Integer page, Genre genre) {
-		log.info("[MovieService.getMoviesWithGenreRatingOrder] {} 영화 평점순 제공", genre.PARAMETER);
-		return movieRepository.findMoviesLikeGenreOrderByAvgRating(page, genre.PARAMETER)
-			.map(MovieSearchRespDTO::from);
-	}
+        val jsonResponse = kmdbRepository.getResponse(params)
+        val searchResult = mutableListOf<MovieSearchRespDTO?>()
+        return try {
+            val pageable: Pageable = PageRequest.of(page ?: 0, 10) // page가 null일 경우 0으로 설정
 
-	public Page<MovieSearchRespDTO> getMoviesWithGenreLatestOrder(Integer page, Genre genre) {
-		log.info("[MovieService.getMoviesWithGenreRatingOrder] {} 영화 최신순 제공", genre.PARAMETER);
-		List<MovieSearchRespDTO> result = new ArrayList<>();
+            val totalMovie = jsonResponse.optInt("TotalCount")
+            parseMoviesFromMovieArray(parseMovieArrayFromJsonResponse(jsonResponse), searchResult)
+            PageImpl(searchResult, pageable, totalMovie.toLong())
+        } catch (e: JSONException) {
+            log.info("[MovieService.searchMovies] '${query}'에 해당하는 검색 결과가 존재하지 않음.")
+            throw NoSearchResultException("'$query'에 해당하는 영화가 없습니다.")
+        }
+    }
 
-		Map<KmdbParameter, String> params = new HashMap<>();
-		params.put(KmdbParameter.START_COUNT, String.valueOf(page * 10));
-		params.put(KmdbParameter.SORT, MovieSearch.LATEST.SORT);
-		params.put(KmdbParameter.GENRE, genre.PARAMETER);
+    @Transactional(readOnly = true)
+    override fun getMoviesWithGenreRatingOrder(page: Int?, genre: Genre?): Page<MovieSearchRespDTO?>? {
+        if (genre != null) {
+            log.info("[MovieService.getMoviesWithGenreRatingOrder] '${genre.PARAMETER}' 영화 평점순 제공")
+        }
+        if (genre != null) {
+            return movieRepository.findMoviesLikeGenreOrderByAvgRating(page, genre.PARAMETER)
+                ?.map { it?.let { it1 -> MovieSearchRespDTO.from(it1) } }
+        }
+        return null;
+    }
 
-		JSONObject jsonResponse = kmdbRepository.getResponse(params);
-		try {
-			Pageable pageable = PageRequest.of(page, 10);
-			int totalMovie = jsonResponse.optInt("TotalCount");
-			parseMoviesFromMovieArray(
-				parseMovieArrayFromJsonResponse(jsonResponse),
-				result);
-			return new PageImpl<>(result, pageable, totalMovie);
-		} catch (JSONException e) {
-			log.info("[MovieService.getMoviesWithGenreLatestOrder] {} 장르 영화 검색 결과가 존재하지 않음", genre.PARAMETER);
-			throw new NoSearchResultException(genre.PARAMETER + " 장르에 더 이상 제공되는 영화가 없습니다.");
-		}
-	}
+    override fun getMoviesWithGenreLatestOrder(page: Int?, genre: Genre?): Page<MovieSearchRespDTO?>? {
+        log.info("[MovieService.getMoviesWithGenreLatestOrder] '${genre!!.PARAMETER}' 영화 최신순 제공")
+        val result = mutableListOf<MovieSearchRespDTO?>()
 
-	@Transactional
-	public MovieDetailRespDTO getMovieDetailInfo(String movieId) {
-		Optional<CachedMovieEntity> find = movieRepository.findByMovieId(movieId);
-		if (find.isPresent()) {
-			log.info("[MovieService.getMovieDetailInfo] {} 영화 존재하므로 DB 내에서 제공", movieId);
-			return MovieDetailRespDTO.Companion.from(find.get());
-		}
+        val params: MutableMap<KmdbParameter, String?> = mutableMapOf(
+            KmdbParameter.START_COUNT to (page?.times(10)).toString(),
+            KmdbParameter.SORT to MovieSearch.LATEST.SORT,
+            KmdbParameter.GENRE to genre.PARAMETER
+        )
 
-		String[] docId = movieId.split("-");
-		if (docId.length != 2) {
-			throw new NoMovieException("해당하는 영화가 존재하지 않습니다.");
-		}
-		String kmdbId = docId[0];
-		String kmdbSeq = docId[1];
+        val jsonResponse = kmdbRepository.getResponse(params)
+        return try {
+            val pageable: Pageable = PageRequest.of(page!!, 10)
+            val totalMovie = jsonResponse.optInt("TotalCount")
+            parseMoviesFromMovieArray(parseMovieArrayFromJsonResponse(jsonResponse), result)
+            PageImpl(result, pageable, totalMovie.toLong())
+        } catch (e: JSONException) {
+            log.info("[MovieService.getMoviesWithGenreLatestOrder] '${genre.PARAMETER}' 장르 영화 검색 결과가 존재하지 않음")
+            throw NoSearchResultException("${genre.PARAMETER} 장르에 더 이상 제공되는 영화가 없습니다.")
+        }
+    }
 
-		Map<KmdbParameter, String> params = new HashMap<>();
-		params.put(KmdbParameter.MOVIE_ID, kmdbId);
-		params.put(KmdbParameter.MOVIE_SEQ, kmdbSeq);
+    @Transactional
+    override fun getMovieDetailInfo(movieId: String?): MovieDetailRespDTO? {
+        val find = movieRepository.findByMovieId(movieId)
+        if (find!!.isPresent) {
+            log.info("[MovieService.getMovieDetailInfo] '${movieId}' 영화 존재하므로 DB 내에서 제공")
+            return MovieDetailRespDTO.from(find.get())
+        }
 
-		log.info("[MovieService.getMovieDetailInfo] {} 영화 존재하지 않으므로 KMDB를 통해 조회 후 DB에 저장 시도", movieId);
-		JSONObject jsonResponse = kmdbRepository.getResponse(params);
-		try {
-			JSONArray movieArray = parseMovieArrayFromJsonResponse(jsonResponse);
-			CachedMovieEntity movieEntity = parseCachedMovieFromJsonMovie(movieArray);
-			movieRepository.saveNewMovie(movieEntity);
-			log.info("[MovieService.getMovieDetailInfo] {} 영화 저장 완료", movieEntity.getMovieId());
-			return MovieDetailRespDTO.Companion.from(movieEntity);
-		} catch (JSONException e) {
-			log.info("[MovieService.getMovieDetailInfo] KMDB API를 통해 영화 조회결과가 적절하지 않음.");
-			throw new NoMovieException("해당 영화는 제공되지 않습니다.");
-		}
-	}
+        val docId = movieId?.split("-")
+        if (docId!!.size != 2) throw NoMovieException("해당하는 영화가 존재하지 않습니다.")
 
-	private CachedMovieEntity parseCachedMovieFromJsonMovie(JSONArray movieArray) {
-		JSONObject jsonMovie = movieArray.getJSONObject(0);
+        val (kmdbId, kmdbSeq) = docId
+        val params: MutableMap<KmdbParameter, String?> = mutableMapOf(
+            KmdbParameter.MOVIE_ID to kmdbId,
+            KmdbParameter.MOVIE_SEQ to kmdbSeq
+        )
 
-		String movieId = getDataWithException(jsonMovie.optString("movieId") + "-" + jsonMovie.optString("movieSeq"));
-		String title = getDataWithException(
-			jsonMovie.optString("title").replaceAll("!HS", "").replaceAll("!HE", "").trim());
-		String imgUrl = getDataWithDefault(jsonMovie.optString("posters"), defaultImgUrl).split("\\|")[0];
-		String genre = getDataWithDefault(jsonMovie.optString("genre"), DEFAULT_MESSAGE);
-		String ReleaseDate = getDataWithDefault(jsonMovie.optString("repRlsDate", ""), DEFAULT_MESSAGE);
-		String plot = safeParsePlotWithDefault(jsonMovie);
-		String runtime = getDataWithDefault(jsonMovie.optString("runtime"), DEFAULT_MESSAGE);
-		String actors = safeParseActorsWithDefault(jsonMovie);
-		String director = safeParseDirectorWithDefault(jsonMovie);
-		return new CachedMovieEntity(movieId, title, imgUrl, genre, ReleaseDate,
-			plot, runtime, actors, director, 0L, 0L, 0L, 0L);
-	}
 
-	private String safeParsePlotWithDefault(JSONObject jsonMovie) {
-		try {
-			JSONArray plotArray = jsonMovie.optJSONObject("plots").optJSONArray("plot");
-			for (int j = 0; j < plotArray.length(); j++) {
-				JSONObject plot = plotArray.getJSONObject(j);
-				if (plot.optString("plotLang").equals("한국어")) {
-					return getDataWithDefault(plot.optString("plotText"), DEFAULT_MESSAGE);
-				}
-			}
-		} catch (JSONException e) {
-			return DEFAULT_MESSAGE;
-		}
-		return DEFAULT_MESSAGE;
-	}
+        log.info("[MovieService.getMovieDetailInfo] '${movieId}' 영화 존재하지 않으므로 KMDB를 통해 조회 후 DB에 저장 시도")
+        val jsonResponse = kmdbRepository.getResponse(params)
+        return try {
+            val movieArray = parseMovieArrayFromJsonResponse(jsonResponse)
+            val movieEntity = parseCachedMovieFromJsonMovie(movieArray)
+            movieRepository.saveNewMovie(movieEntity)
+            log.info("[MovieService.getMovieDetailInfo] '${movieEntity.movieId}' 영화 저장 완료")
+            MovieDetailRespDTO.from(movieEntity)
+        } catch (e: JSONException) {
+            log.info("[MovieService.getMovieDetailInfo] KMDB API를 통해 영화 조회결과가 적절하지 않음.")
+            throw NoMovieException("해당 영화는 제공되지 않습니다.")
+        }
+    }
 
-	private String safeParseActorsWithDefault(JSONObject jsonMovie) {
-		StringBuilder actorName = new StringBuilder();
-		try {
-			JSONArray actorsArray = jsonMovie.optJSONObject("actors").optJSONArray("actor");
-			for (int k = 0; k < Math.min(actorsArray.length(), 5); k++) {
-				actorName.append(", ")
-					.append(getDataWithDefault(actorsArray.getJSONObject(k).optString("actorNm"), DEFAULT_MESSAGE));
-				if (actorName.toString().equals(", 알 수 없음"))
-					break;
-			}
-			actorName = new StringBuilder(actorName.substring(2));
-		} catch (JSONException e) {
-			actorName = new StringBuilder(DEFAULT_MESSAGE);
-		}
-		return actorName.toString();
-	}
+    private fun parseCachedMovieFromJsonMovie(movieArray: JSONArray): CachedMovieEntity {
+        val jsonMovie = movieArray.getJSONObject(0)
 
-	private String safeParseDirectorWithDefault(JSONObject jsonMovie) {
-		String resultDirector;
-		try {
-			JSONArray directorsArray = jsonMovie.optJSONObject("directors").optJSONArray("director");
-			resultDirector = getDataWithDefault(directorsArray.getJSONObject(0).optString("directorNm"),
-				DEFAULT_MESSAGE);
-		} catch (JSONException e) {
-			resultDirector = DEFAULT_MESSAGE;
-		}
-		return resultDirector;
-	}
+        val movieId = getDataWithException("${jsonMovie.optString("movieId")}-${jsonMovie.optString("movieSeq")}")
+        val title = getDataWithException(
+            jsonMovie.optString("title")
+                .replace("!HS", "")
+                .replace("!HE", "")
+                .trim()
+        )
+        val imgUrl = getDataWithDefault(jsonMovie.optString("posters"), defaultImgUrl).split("|")[0]
+        val genre = getDataWithDefault(jsonMovie.optString("genre"), DEFAULT_MESSAGE)
+        val releaseDate = getDataWithDefault(jsonMovie.optString("repRlsDate"), DEFAULT_MESSAGE)
+        val plot = safeParsePlotWithDefault(jsonMovie)
+        val runtime = getDataWithDefault(jsonMovie.optString("runtime"), DEFAULT_MESSAGE)
+        val actors = safeParseActorsWithDefault(jsonMovie)
+        val director = safeParseDirectorWithDefault(jsonMovie)
 
-	private String getDataWithException(String str) {
-		return Optional.ofNullable(str)
-			.filter(val -> !val.isEmpty())  // 빈 문자열이 아닐 때만 처리
-			.orElseThrow(() -> new NoMovieException("제공하지 않는 영화입니다."));
-	}
+        return CachedMovieEntity(
+            movieId,
+            title,
+            imgUrl,
+            genre,
+            releaseDate,
+            plot,
+            runtime,
+            actors,
+            director,
+            0L,
+            0L,
+            0L,
+            0L
+        )
+    }
 
-	private String getDataWithDefault(String input, String defaultString) {
-		return input == null || input.trim().isEmpty() ? defaultString : input;
-	}
+    private fun safeParsePlotWithDefault(jsonMovie: JSONObject): String {
+        return try {
+            val plotArray = jsonMovie.optJSONObject("plots")?.optJSONArray("plot") ?: return DEFAULT_MESSAGE
+            (0 until plotArray.length()).mapNotNull { i ->
+                plotArray.getJSONObject(i).takeIf { it.optString("plotLang") == "한국어" }
+            }.firstOrNull()?.optString("plotText") ?: DEFAULT_MESSAGE
+        } catch (e: JSONException) {
+            DEFAULT_MESSAGE
+        }
+    }
 
-	private JSONArray parseMovieArrayFromJsonResponse(JSONObject jsonResponse) {
-		return jsonResponse.getJSONArray("Data")
-			.getJSONObject(0)
-			.getJSONArray("Result");
-	}
+    private fun safeParseActorsWithDefault(jsonMovie: JSONObject): String {
+        return try {
+            val actorsArray = jsonMovie.optJSONObject("actors")?.optJSONArray("actor") ?: return DEFAULT_MESSAGE
+            (0 until Math.min(actorsArray.length(), 5))
+                .joinToString(", ") { actorsArray.getJSONObject(it).optString("actorNm") }
+                .takeIf { it != DEFAULT_MESSAGE } ?: DEFAULT_MESSAGE
+        } catch (e: JSONException) {
+            DEFAULT_MESSAGE
+        }
+    }
 
-	private void parseMoviesFromMovieArray(JSONArray movieArray, List<MovieSearchRespDTO> result) {
-		for (int i = 0; i < movieArray.length(); i++) {
-			JSONObject movie = movieArray.getJSONObject(i);
-			String id = getDataWithException(movie.optString("movieId") + "-" + movie.optString("movieSeq"));
-			String title = getDataWithException(
-				movie.optString("title")
-					.replaceAll("!HS", "").
-					replaceAll("!HE", "").
-					trim());
-			String imgUrl = getDataWithDefault(movie.optString("posters"), defaultImgUrl).split("\\|")[0];
-			String producedYear = getDataWithDefault(movie.optString("prodYear"), DEFAULT_MESSAGE);
-			MovieSearchRespDTO search = new MovieSearchRespDTO(id, title, imgUrl, producedYear);
-			result.add(search);
-		}
-	}
+    private fun safeParseDirectorWithDefault(jsonMovie: JSONObject): String {
+        return try {
+            val directorsArray =
+                jsonMovie.optJSONObject("directors")?.optJSONArray("director") ?: return DEFAULT_MESSAGE
+            directorsArray.getJSONObject(0).optString("directorNm") ?: DEFAULT_MESSAGE
+        } catch (e: JSONException) {
+            DEFAULT_MESSAGE
+        }
+    }
+
+    private fun getDataWithException(str: String): String {
+        return str.takeIf { it.isNotEmpty() } ?: throw NoMovieException("제공하지 않는 영화입니다.")
+    }
+
+    private fun getDataWithDefault(input: String?, defaultString: String): String {
+        return input?.takeIf { it.trim().isNotEmpty() } ?: defaultString
+    }
+
+    private fun parseMovieArrayFromJsonResponse(jsonResponse: JSONObject): JSONArray {
+        return jsonResponse.getJSONArray("Data")
+            .getJSONObject(0)
+            .getJSONArray("Result")
+    }
+
+    private fun parseMoviesFromMovieArray(movieArray: JSONArray, result: MutableList<MovieSearchRespDTO?>) {
+        for (i in 0 until movieArray.length()) {
+            val movie = movieArray.getJSONObject(i)
+            val id = getDataWithException(movie.optString("movieId") + "-" + movie.optString("movieSeq"))
+            val title = getDataWithException(
+                movie.optString("title")
+                    .replace("!HS", "")
+                    .replace("!HE", "")
+                    .trim()
+            )
+            val imgUrl = getDataWithDefault(movie.optString("posters"), defaultImgUrl).split("|")[0]
+            val producedYear = getDataWithDefault(movie.optString("prodYear"), DEFAULT_MESSAGE)
+            val search = MovieSearchRespDTO(id, title, imgUrl, producedYear)
+            result.add(search)
+        }
+    }
 }
+
