@@ -149,7 +149,7 @@ class ReviewServiceImpl(
      */
     @Throws(NoMovieException::class)
     override fun checkWhetherMovieExist(movieId: String) {
-        movieRepository.findByMovieId(movieId)
+        movieRepository.findByMovieId(movieId)!!
             .orElseThrow {
                 NoMovieException(
                     ("No movie found with id: ["
