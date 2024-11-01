@@ -1,18 +1,20 @@
-package core.application.movies.repositories.comment.jpa;
+package core.application.movies.repositories.comment.jpa
 
-import core.application.movies.models.entities.CommentDislike;
-import java.util.UUID;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import core.application.movies.models.entities.CommentDislike
+import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
+import org.springframework.data.jpa.repository.Query
+import java.util.*
 
-public interface JpaCommentDislikeRepository extends JpaRepository<CommentDislike, Long> {
-
+interface JpaCommentDislikeRepository : JpaRepository<CommentDislike?, Long?> {
     @Modifying
-    @Query(value = "insert into comment_dislike_table(comment_id, user_id) values (:commentId, :userId)", nativeQuery = true)
-    void saveDisLike(Long commentId, UUID userId);
+    @Query(
+        value = "insert into comment_dislike_table(comment_id, user_id) values (:commentId, :userId)",
+        nativeQuery = true
+    )
+    fun saveDisLike(commentId: Long?, userId: UUID?)
 
-    Boolean existsByComment_CommentIdAndUserId(Long commentId, UUID userId);
+    fun existsByComment_CommentIdAndUserId(commentId: Long?, userId: UUID?): Boolean?
 
-    void deleteByComment_CommentIdAndUserId(Long commentId, UUID userId);
+    fun deleteByComment_CommentIdAndUserId(commentId: Long?, userId: UUID?)
 }

@@ -1,35 +1,31 @@
-package core.application.movies.repositories.mapper;
+package core.application.movies.repositories.mapper
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.apache.ibatis.annotations.Mapper;
-
-import core.application.movies.models.dto.response.CommentRespDTO;
-import core.application.movies.models.entities.CommentEntity;
+import core.application.movies.models.dto.response.CommentRespDTO
+import core.application.movies.models.entities.CommentEntity
+import org.apache.ibatis.annotations.Mapper
+import java.util.*
 
 @Mapper
-public interface CommentMapper {
-	void save(String movieId, UUID userId, CommentEntity comment);
+interface CommentMapper {
+    fun save(movieId: String?, userId: UUID?, comment: CommentEntity?)
 
-	Optional<CommentEntity> findByCommentId(Long commentId);
+    fun findByCommentId(commentId: Long?): Optional<CommentEntity?>?
 
-	Optional<CommentEntity> findByMovieIdAndUserId(String movieId, UUID userId);
+    fun findByMovieIdAndUserId(movieId: String?, userId: UUID?): Optional<CommentEntity?>?
 
-	List<CommentRespDTO> findByMovieId(String movieId, UUID userId, int offset);
+    fun findByMovieId(movieId: String?, userId: UUID?, offset: Int): List<CommentRespDTO?>?
 
-	List<CommentRespDTO> findByMovieIdOnDateDescend(String movieId, UUID userId, int offset);
+    fun findByMovieIdOnDateDescend(movieId: String?, userId: UUID?, offset: Int): List<CommentRespDTO?>?
 
-	List<CommentRespDTO> findByMovieIdOnLikeDescend(String movieId, UUID userId, int offset);
+    fun findByMovieIdOnLikeDescend(movieId: String?, userId: UUID?, offset: Int): List<CommentRespDTO?>?
 
-	List<CommentRespDTO> findByMovieIdOnDislikeDescend(String movieId, UUID userId, int offset);
+    fun findByMovieIdOnDislikeDescend(movieId: String?, userId: UUID?, offset: Int): List<CommentRespDTO?>?
 
-	List<CommentEntity> selectAll();
+    fun selectAll(): List<CommentEntity?>?
 
-	int countByMovieId(String movieId);
+    fun countByMovieId(movieId: String?): Int
 
-	void update(CommentEntity comment);
+    fun update(comment: CommentEntity?)
 
-	void delete(Long commentId);
+    fun delete(commentId: Long?)
 }

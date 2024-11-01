@@ -1,30 +1,29 @@
-package core.application.movies.repositories.comment.mybatis;
+package core.application.movies.repositories.comment.mybatis
 
-import java.util.UUID;
-
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Repository;
-
-import core.application.movies.repositories.comment.CommentLikeRepository;
-import core.application.movies.repositories.mapper.CommentLikeMapper;
-import lombok.RequiredArgsConstructor;
+import core.application.movies.repositories.comment.CommentLikeRepository
+import core.application.movies.repositories.mapper.CommentLikeMapper
+import lombok.RequiredArgsConstructor
+import org.springframework.context.annotation.Profile
+import org.springframework.stereotype.Repository
+import java.util.*
 
 @Repository
 @RequiredArgsConstructor
 @Profile("mybatis")
-public class MybatisCommentLikeRepository implements CommentLikeRepository {
-	private final CommentLikeMapper commentLikeMapper;
+class MybatisCommentLikeRepository(
+    private val commentLikeMapper: CommentLikeMapper
+) : CommentLikeRepository {
 
-	public void saveCommentLike(Long commentId, UUID userId) {
-		commentLikeMapper.save(commentId, userId);
-	}
+    override fun saveCommentLike(commentId: Long?, userId: UUID?) {
+        commentLikeMapper.save(commentId, userId)
+    }
 
-	public boolean isExistLike(Long commentId, UUID userId) {
-		int count = commentLikeMapper.countLikeByUser(commentId, userId);
-		return count != 0;
-	}
+    override fun isExistLike(commentId: Long?, userId: UUID?): Boolean {
+        val count = commentLikeMapper.countLikeByUser(commentId, userId)
+        return count != 0
+    }
 
-	public void deleteCommentLike(Long commentId, UUID userId) {
-		commentLikeMapper.delete(commentId, userId);
-	}
+    override fun deleteCommentLike(commentId: Long?, userId: UUID?) {
+        commentLikeMapper.delete(commentId, userId)
+    }
 }
