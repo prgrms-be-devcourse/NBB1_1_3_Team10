@@ -146,7 +146,7 @@ class ReviewCommentController(private val reviewCommentService: ReviewCommentSer
         }
 
         // principal 로 부터 ID 받음
-        val userId = customUserDetails.userId
+        val userId = customUserDetails.userId!!
 
         val groupId = dtoReq.groupId
         val validData = dtoReq.toEntity(userId)
@@ -187,7 +187,7 @@ class ReviewCommentController(private val reviewCommentService: ReviewCommentSer
         }
 
         // principal 로 부터 ID 받음
-        val userId = customUserDetails.userId
+        val userId = customUserDetails.userId!!
 
         if (!reviewCommentService.doesUserOwnsComment(userId, reviewCommentId)) {
             throw NotCommentOwnerException("Only comment owner can edit comments")
@@ -219,7 +219,7 @@ class ReviewCommentController(private val reviewCommentService: ReviewCommentSer
     ): ApiResponse<Message> {
         // principal 로 부터 ID 받음
 
-        val userId = customUserDetails.userId
+        val userId = customUserDetails.userId!!
 
         if (!reviewCommentService.doesUserOwnsComment(userId, reviewCommentId)) {
             throw NotCommentOwnerException("Only comment owner can delete comments")
