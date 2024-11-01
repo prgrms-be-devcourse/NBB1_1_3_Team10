@@ -67,7 +67,7 @@ class CommentController(private val commentService: CommentService) {
             log.info("검증 오류 발생 : '${bindingResult}'")
             throw InvalidWriteCommentException(bindingResult.allErrors[0].defaultMessage)
         }
-        val user: UserEntity = userDetails.userEntity()
+        val user: UserEntity = userDetails.userEntity
         val commentRespDTO = commentService.writeCommentOnMovie(writeReqDTO, user, movieId)
         return ApiResponse.onCreateSuccess(commentRespDTO)
     }
@@ -79,7 +79,7 @@ class CommentController(private val commentService: CommentService) {
         @PathVariable("commentId") commentId: String,
         @AuthenticationPrincipal userDetails: CustomUserDetails
     ): ApiResponse<Message> {
-        val userId: UUID = userDetails.userId
+        val userId: UUID? = userDetails.userId
         commentService.deleteCommentOnMovie(movieId, userId, commentId.toLong())
         return ApiResponse.onDeleteSuccess(Message.createMessage("한줄평이 삭제되었습니다."))
     }
@@ -90,7 +90,7 @@ class CommentController(private val commentService: CommentService) {
         @PathVariable("commentId") commentId: Long,
         @AuthenticationPrincipal userDetails: CustomUserDetails
     ): ApiResponse<Message> {
-        val userId: UUID = userDetails.userId
+        val userId: UUID? = userDetails.userId
         commentService.incrementCommentLike(commentId, userId)
         return ApiResponse.onCreateSuccess(Message.createMessage("한줄평 좋아요 성공"))
     }
@@ -101,7 +101,7 @@ class CommentController(private val commentService: CommentService) {
         @PathVariable("commentId") commentId: Long,
         @AuthenticationPrincipal userDetails: CustomUserDetails
     ): ApiResponse<Message> {
-        val userId: UUID = userDetails.userId
+        val userId: UUID? = userDetails.userId
         commentService.decrementCommentLike(commentId, userId)
         return ApiResponse.onDeleteSuccess(Message.createMessage("한줄평 좋아요 취소 성공"))
     }
@@ -112,7 +112,7 @@ class CommentController(private val commentService: CommentService) {
         @PathVariable("commentId") commentId: Long,
         @AuthenticationPrincipal userDetails: CustomUserDetails
     ): ApiResponse<Message> {
-        val userId: UUID = userDetails.userId
+        val userId: UUID? = userDetails.userId
         commentService.incrementCommentDislike(commentId, userId)
         return ApiResponse.onCreateSuccess(Message.createMessage("한줄평 싫어요 성공"))
     }
@@ -123,7 +123,7 @@ class CommentController(private val commentService: CommentService) {
         @PathVariable("commentId") commentId: Long,
         @AuthenticationPrincipal userDetails: CustomUserDetails
     ): ApiResponse<Message> {
-        val userId: UUID = userDetails.userId
+        val userId: UUID? = userDetails.userId
         commentService.decrementCommentDislike(commentId, userId)
         return ApiResponse.onDeleteSuccess(Message.createMessage("한줄평 싫어요 취소 성공"))
     }

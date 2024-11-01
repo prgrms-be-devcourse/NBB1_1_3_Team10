@@ -63,7 +63,7 @@ class CommentService(
     }
 
     @Transactional
-    fun deleteCommentOnMovie(movieId: String, userId: UUID, commentId: Long?) {
+    fun deleteCommentOnMovie(movieId: String, userId: UUID?, commentId: Long?) {
         val comment = commentRepository.findByCommentId(commentId)
             ?.orElseThrow(Supplier { NotFoundCommentException("존재하지 않는 한줄평입니다.") })
         if (comment!!.userId != userId) {
@@ -126,7 +126,7 @@ class CommentService(
     }
 
     @Transactional
-    fun decrementCommentDislike(commentId: Long, userId: UUID) {
+    fun decrementCommentDislike(commentId: Long, userId: UUID?) {
         val comment = commentRepository.findByCommentId(commentId)
             ?.orElseThrow(Supplier { NotFoundCommentException("존재하지 않는 한줄평입니다.") })
         if (!dislikeRepository.isExistDislike(commentId, userId)) {
