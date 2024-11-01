@@ -1,41 +1,33 @@
-package core.application.movies.models.entities;
+package core.application.movies.models.entities
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import java.util.UUID;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*
+import lombok.*
+import java.util.*
 
 @Entity
 @Table(name = "comment_dislike_table")
 @Getter
-@Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CommentDislike {
+data class CommentDislike(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long commentDislikeId;
+    val commentDislikeId: Long? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comment_id")
-    private CommentEntity comment;
+    val comment: CommentEntity? = null,
 
-    private UUID userId;
-
-    public static CommentDislike of(CommentEntity comment, UUID userId) {
-        return CommentDislike.builder()
-                .comment(comment)
-                .userId(userId)
-                .build();
+    val userId: UUID? = null
+) {
+    companion object {
+        fun of(comment: CommentEntity?, userId: UUID?): CommentDislike {
+            return CommentDislike(
+                commentDislikeId = null, // 주의: 이 값은 null로 설정되어 있으며, 생성 시 자동 생성됨
+                comment = comment,
+                userId = userId
+            )
+        }
     }
 }
+

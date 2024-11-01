@@ -1,67 +1,62 @@
-package core.application.movies.models.entities;
+package core.application.movies.models.entities
 
-import core.application.movies.models.dto.request.CommentWriteReqDTO;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import java.time.Instant;
-import java.util.UUID;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
-import org.hibernate.annotations.CreationTimestamp;
+import core.application.movies.models.dto.request.CommentWriteReqDTO
+import jakarta.persistence.*
+import lombok.*
+import org.hibernate.annotations.CreationTimestamp
+import java.time.Instant
+import java.util.*
 
-@Getter
-@Builder
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@ToString
 @Entity
 @Table(name = "comment_table")
-public class CommentEntity {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long commentId;
-	private String content;
-	@Column(name = "`like`")
-	private int like;
-	private int dislike;
-	private int rating;
-	private String movieId;     // 영화 API 에 따라 달라질 수 있음.
-	private UUID userId;
-	@CreationTimestamp
-	private Instant createdAt;
+data class CommentEntity(
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val commentId: Long? = null,
 
-	public static CommentEntity of(CommentWriteReqDTO comment, String movieId, UUID userId) {
-		return CommentEntity.builder()
-			.content(comment.getContent())
-			.like(0)
-			.dislike(0)
-			.rating(comment.getRating())
-			.movieId(movieId)
-			.userId(userId)
-			.build();
-	}
+    val content: String? = null,
 
-	public void isLiked() {
-		this.like++;
-	}
+    @Column(name = "`like`")
+    var like: Int = 0, // 기본값 0으로 설정
 
-	public void cancelLike() {
-		this.like--;
-	}
+    var dislike: Int = 0, // 기본값 0으로 설정
 
-	public void isDisliked() {
-		this.dislike++;
-	}
+    var rating: Int = 0, // 기본값 0으로 설정
 
-	public void cancelDislike() {
-		this.dislike--;
-	}
+    val movieId: String? = null, // 영화 API에 따라 달라질 수 있음
+
+    val userId: UUID? = null,
+
+    @CreationTimestamp
+    val createdAt: Instant? = null
+) {
+    companion object {
+        @JvmStatic
+        fun of(comment: CommentWriteReqDTO, movieId: String?, userId: UUID?): CommentEntity {
+            return CommentEntity(
+                content = comment.content,
+                like = 0,
+                dislike = 0,
+                rating = comment.rating,
+                movieId = movieId,
+                userId = userId
+            )
+        }
+    }
+
+    fun isLiked() {
+        like++
+    }
+
+    fun cancelLike() {
+        like--
+    }
+
+    fun isDisliked() {
+        dislike++
+    }
+
+    fun cancelDislike() {
+        dislike--
+    }
 }
