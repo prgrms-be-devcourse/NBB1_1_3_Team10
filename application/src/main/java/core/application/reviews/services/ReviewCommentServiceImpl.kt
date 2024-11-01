@@ -1,239 +1,271 @@
-package core.application.reviews.services;
+package core.application.reviews.services
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import core.application.reviews.exceptions.NoReviewCommentFoundException;
-import core.application.reviews.exceptions.NoReviewFoundException;
-import core.application.reviews.models.entities.ReviewCommentEntity;
-import core.application.reviews.repositories.ReviewCommentRepository;
-import core.application.reviews.repositories.ReviewRepository;
-import lombok.RequiredArgsConstructor;
+import core.application.reviews.exceptions.NoReviewCommentFoundException
+import core.application.reviews.exceptions.NoReviewFoundException
+import core.application.reviews.models.entities.ReviewCommentEntity
+import core.application.reviews.repositories.ReviewCommentRepository
+import core.application.reviews.repositories.ReviewRepository
+import lombok.RequiredArgsConstructor
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import java.util.*
+import java.util.function.Function
+import java.util.function.Supplier
 
 @Service
-@RequiredArgsConstructor
-public class ReviewCommentServiceImpl implements
-	ReviewCommentService {
+class ReviewCommentServiceImpl(
+    private val reviewCommentRepo: ReviewCommentRepository,
+    private val reviewRepo: ReviewRepository // 아직 bean 으로 등록 안되어 있어서 build 에러 날 수 있음.
+) : ReviewCommentService {
 
-	private final ReviewCommentRepository reviewCommentRepo;
-	private final ReviewRepository reviewRepo;      // 아직 bean 으로 등록 안되어 있어서 build 에러 날 수 있음.
+    /**
+     * {@inheritDoc}
+     */
+    @Transactional(readOnly = true)
+    @Throws(
+        NoReviewCommentFoundException::class
+    )
+    override fun doesUserOwnsComment(userId: UUID, reviewCommentId: Long): Boolean {
+        val reviewComment = doesExist(reviewCommentId,
+            { reviewCommentId: Long -> reviewCommentRepo.findByReviewCommentId(reviewCommentId) },
+            { NoReviewCommentFoundException(reviewCommentId) })
+        val findByReviewCommentId = reviewCommentRepo.findByReviewCommentId(reviewCommentId)
 
-	/**
-	 * 주어진 {@code id} 로 {@code function} 호출했을 때 값이 존재하는지 아닌지 확인하는 메서드
-	 *
-	 * @param id        검사할 ID
-	 * @param function  호출할 함수 {@code (Long -> Optional<?>}
-	 * @param exception 부재시 {@code throw} 할 exception {@code (() -> RuntimeException)}
-	 */
-	private static <R> R doesExist(Long id,
-		Function<Long, Optional<R>> function,
-		Supplier<? extends RuntimeException> exception) {
-		return function.apply(id).orElseThrow(exception);
-	}
+        return reviewComment!!.userId == userId
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	@Transactional(readOnly = true)
-	public boolean doesUserOwnsComment(UUID userId, Long reviewCommentId)
-		throws NoReviewCommentFoundException {
+    /**
+     * {@inheritDoc}
+     */
+    @Transactional(readOnly = true)
+    @Throws(NoReviewFoundException::class)
+    override fun getNumberOfParentComment(reviewId: Long): Long {
+        // reviewId 에 해당하는 포스팅 없으면 throw
 
-		ReviewCommentEntity reviewComment = doesExist(reviewCommentId,
-			reviewCommentRepo::findByReviewCommentId,
-			() -> new NoReviewCommentFoundException(reviewCommentId));
+        doesExist(reviewId,
+            { reviewId: Long -> reviewRepo.findByReviewId(reviewId) },
+            { NoReviewFoundException(reviewId) })
 
-		return reviewComment.getUserId().equals(userId);
-	}
+        return reviewCommentRepo.countParentCommentByReviewId(reviewId)
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Transactional(readOnly = true)
-	public long getNumberOfParentComment(Long reviewId) throws NoReviewFoundException {
+    /**
+     * {@inheritDoc}
+     */
+    @Transactional(readOnly = true)
+    @Throws(
+        NoReviewCommentFoundException::class
+    )
+    override fun getNumberOfChildComment(groupId: Long): Long {
+        // groupId 에 해당하는 부모 댓글 없으면 throw
 
-		// reviewId 에 해당하는 포스팅 없으면 throw
-		doesExist(reviewId, reviewRepo::findByReviewId, () -> new NoReviewFoundException(reviewId));
+        doesExist(groupId,
+            { reviewCommentId: Long -> reviewCommentRepo.findByReviewCommentId(reviewCommentId) },
+            { NoReviewCommentFoundException(groupId) })
 
-		return reviewCommentRepo.countParentCommentByReviewId(reviewId);
-	}
+        return reviewCommentRepo.countChildCommentByGroupId(groupId)
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Transactional(readOnly = true)
-	public long getNumberOfChildComment(Long groupId) throws NoReviewCommentFoundException {
+    /**
+     * {@inheritDoc}
+     */
+    @Transactional(readOnly = true)
+    @Throws(NoReviewFoundException::class)
+    override fun getParentReviewComments(
+        reviewId: Long,
+        order: ReviewCommentSortOrder, offset: Int, num: Int
+    ): List<ReviewCommentEntity> {
+        // reviewId 에 해당하는 포스팅 없으면 throw
 
-		// groupId 에 해당하는 부모 댓글 없으면 throw
-		doesExist(groupId, reviewCommentRepo::findByReviewCommentId,
-			() -> new NoReviewCommentFoundException(groupId));
+        doesExist(reviewId,
+            { reviewId: Long -> reviewRepo.findByReviewId(reviewId) },
+            { NoReviewFoundException(reviewId) })
 
-		return reviewCommentRepo.countChildCommentByGroupId(groupId);
-	}
+        return when (order) {
+            ReviewCommentSortOrder.LATEST -> reviewCommentRepo.findParentCommentByReviewIdOnDateDescend(
+                reviewId, offset,
+                num
+            )
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	@Transactional(readOnly = true)
-	public List<ReviewCommentEntity> getParentReviewComments(Long reviewId,
-		ReviewCommentSortOrder order, int offset, int num) throws NoReviewFoundException {
+            ReviewCommentSortOrder.LIKE -> reviewCommentRepo.findParentCommentByReviewIdOnLikeDescend(
+                reviewId, offset,
+                num
+            )
+        }
+    }
 
-		// reviewId 에 해당하는 포스팅 없으면 throw
-		doesExist(reviewId, reviewRepo::findByReviewId, () -> new NoReviewFoundException(reviewId));
+    /**
+     * {@inheritDoc}
+     */
+    @Transactional(readOnly = true)
+    @Throws(
+        NoReviewFoundException::class,
+        NoReviewCommentFoundException::class
+    )
+    override fun getChildReviewCommentsOnParent(
+        reviewId: Long, groupId: Long, offset: Int, num: Int
+    ): List<ReviewCommentEntity> {
+        // 부모 댓글 없으면 throw
 
-		return switch (order) {
-			// 최신순
-			case LATEST -> reviewCommentRepo.findParentCommentByReviewIdOnDateDescend(reviewId, offset,
-				num);
-			// 좋아요 순
-			case LIKE -> reviewCommentRepo.findParentCommentByReviewIdOnLikeDescend(reviewId, offset,
-				num);
-		};
-	}
+        val parentComment = doesExist(groupId,
+            { reviewCommentId: Long -> reviewCommentRepo.findByReviewCommentId(reviewCommentId) },
+            { NoReviewCommentFoundException(groupId) })
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	@Transactional(readOnly = true)
-	public List<ReviewCommentEntity> getChildReviewCommentsOnParent(
-		Long reviewId, Long groupId, int offset, int num)
-		throws NoReviewFoundException, NoReviewCommentFoundException {
+        // 자식 댓글 달려는 부모 댓글이 reviewId 의 댓글이 아니면 throw
+        if (parentComment!!.reviewId != reviewId) {
+            throw NoReviewCommentFoundException(
+                ("Parent comment [" + groupId + "] does not belongs to given review ID ["
+                        + reviewId + "]")
+            )
+        }
 
-		// 부모 댓글 없으면 throw
-		ReviewCommentEntity parentComment = doesExist(groupId,
-			reviewCommentRepo::findByReviewCommentId,
-			() -> new NoReviewCommentFoundException(groupId));
+        return reviewCommentRepo.findChildCommentsByGroupId(groupId, offset, num)
+    }
 
-		// 자식 댓글 달려는 부모 댓글이 reviewId 의 댓글이 아니면 throw
-		if (!parentComment.getReviewId().equals(reviewId)) {
-			throw new NoReviewCommentFoundException(
-				"Parent comment [" + groupId + "] does not belongs to given review ID ["
-					+ reviewId + "]");
-		}
+    /**
+     * {@inheritDoc}
+     */
+    @Transactional
+    @Throws(NoReviewFoundException::class)
+    override fun addNewParentReviewComment(
+        reviewId: Long, userId: UUID,
+        parentReviewComment: ReviewCommentEntity
+    ): ReviewCommentEntity? {
+        // 포스팅 없으면 throw
 
-		return reviewCommentRepo.findChildCommentsByGroupId(groupId, offset, num);
-	}
+        doesExist(reviewId,
+            { reviewId: Long -> reviewRepo.findByReviewId(reviewId) },
+            { NoReviewFoundException(reviewId) })
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	@Transactional
-	public ReviewCommentEntity addNewParentReviewComment(Long reviewId, UUID userId,
-		ReviewCommentEntity parentReviewComment) throws NoReviewFoundException {
+        return reviewCommentRepo.saveNewParentReviewComment(reviewId, userId, parentReviewComment)
+    }
 
-		// 포스팅 없으면 throw
-		doesExist(reviewId, reviewRepo::findByReviewId, () -> new NoReviewFoundException(reviewId));
+    /**
+     * {@inheritDoc}
+     */
+    @Transactional
+    @Throws(
+        NoReviewFoundException::class,
+        NoReviewCommentFoundException::class
+    )
+    override fun addNewChildReviewComment(
+        reviewId: Long, groupId: Long, userId: UUID,
+        childReviewComment: ReviewCommentEntity
+    ): ReviewCommentEntity? {
+        // 포스팅, 부모 댓글 없으면 throw
 
-		return reviewCommentRepo.saveNewParentReviewComment(reviewId, userId, parentReviewComment);
-	}
+        doesExist(reviewId,
+            { reviewId: Long -> reviewRepo.findByReviewId(reviewId) },
+            { NoReviewFoundException(reviewId) })
+        doesExist(groupId,
+            { reviewCommentId: Long -> reviewCommentRepo.findByReviewCommentId(reviewCommentId) },
+            { NoReviewCommentFoundException(groupId) })
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	@Transactional
-	public ReviewCommentEntity addNewChildReviewComment(Long reviewId, Long groupId, UUID userId,
-		ReviewCommentEntity childReviewComment)
-		throws NoReviewFoundException, NoReviewCommentFoundException {
+        val validData = ReviewCommentEntity(
+            0L, reviewId, userId, childReviewComment.content, groupId, childReviewComment.commentRef, 0, null, false
+        )
 
-		// 포스팅, 부모 댓글 없으면 throw
-		doesExist(reviewId, reviewRepo::findByReviewId, () -> new NoReviewFoundException(reviewId));
-		doesExist(groupId, reviewCommentRepo::findByReviewCommentId,
-			() -> new NoReviewCommentFoundException(groupId));
+        return reviewCommentRepo.saveNewChildReviewComment(groupId, userId, validData)
+    }
 
-		ReviewCommentEntity validData = ReviewCommentEntity.builder()
-			.reviewId(reviewId)
-			.userId(userId)
-			.content(childReviewComment.getContent())
-			.groupId(groupId)
-			.commentRef(childReviewComment.getCommentRef())
-			.build();
+    /**
+     * {@inheritDoc}
+     */
+    @Transactional
+    @Throws(NoReviewCommentFoundException::class)
+    override fun editReviewComment(
+        reviewCommentId: Long, commentRef: Long?,
+        contentReplacement: String
+    ): ReviewCommentEntity? {
+        val origin = doesExist(reviewCommentId,
+            { reviewCommentId: Long -> reviewCommentRepo.findByReviewCommentId(reviewCommentId) },
+            { NoReviewCommentFoundException(reviewCommentId) })
 
-		return reviewCommentRepo.saveNewChildReviewComment(groupId, userId, validData);
-	}
+        if (commentRef != null) {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	@Transactional
-	public ReviewCommentEntity editReviewComment(Long reviewCommentId, Long commentRef,
-		String contentReplacement)
-		throws NoReviewCommentFoundException {
+            origin!!.mentionReviewComment(
+                (doesExist(commentRef,
+                    { reviewCommentId: Long -> reviewCommentRepo.findByReviewCommentId(reviewCommentId) },
+                    { NoReviewCommentFoundException(reviewCommentId) }))!!
+            )
+        }
 
-		ReviewCommentEntity origin = doesExist(reviewCommentId,
-			reviewCommentRepo::findByReviewCommentId,
-			() -> new NoReviewCommentFoundException(reviewCommentId));
+        val replacement: ReviewCommentEntity = ReviewCommentEntity(
+            content = contentReplacement,
+            commentRef = origin!!.commentRef
+        )
 
-		if (commentRef != null) {
-			origin.mentionReviewComment(
-				doesExist(commentRef, reviewCommentRepo::findByReviewCommentId,
-					() -> new NoReviewCommentFoundException(reviewCommentId))
-			);
-		}
+        return reviewCommentRepo.editReviewCommentInfo(reviewCommentId, replacement, true).orElseThrow {
+            throw NoReviewCommentFoundException(
+                reviewCommentId
+            )
+        }
+    }
 
-		ReviewCommentEntity replacement = ReviewCommentEntity.builder()
-			.content(contentReplacement)
-			.commentRef(origin.getCommentRef())
-			.build();
+    /**
+     * {@inheritDoc}
+     */
+    @Transactional
+    @Throws(NoReviewCommentFoundException::class)
+    override fun deleteReviewComment(reviewCommentId: Long): ReviewCommentEntity? {
+        doesExist(reviewCommentId,
+            { reviewCommentId: Long -> reviewCommentRepo.findByReviewCommentId(reviewCommentId) },
+            { NoReviewCommentFoundException(reviewCommentId) })
 
-		return reviewCommentRepo.editReviewCommentInfo(reviewCommentId, replacement, true);
-	}
+        val validData: ReviewCommentEntity = ReviewCommentEntity(
+            content = "해당 댓글은 삭제되었습니다.",
+            commentRef = null
+        )
+        return reviewCommentRepo.editReviewCommentInfo(reviewCommentId, validData, true).orElseThrow { throw NoReviewCommentFoundException(reviewCommentId) }
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	@Transactional
-	public ReviewCommentEntity deleteReviewComment(Long reviewCommentId)
-		throws NoReviewCommentFoundException {
+    /**
+     * {@inheritDoc}
+     */
+    @Transactional
+    @Throws(NoReviewCommentFoundException::class)
+    override fun increaseCommentLike(reviewCommentId: Long): ReviewCommentEntity? {
+        var likeOrigin = doesExist(reviewCommentId,
+            { reviewCommentId: Long -> reviewCommentRepo.findByReviewCommentId(reviewCommentId) },
+            { NoReviewCommentFoundException(reviewCommentId) })!!.like
 
-		doesExist(reviewCommentId, reviewCommentRepo::findByReviewCommentId,
-			() -> new NoReviewCommentFoundException(reviewCommentId));
+        return reviewCommentRepo.updateReviewCommentLikes(reviewCommentId, ++likeOrigin).orElseThrow { throw NoReviewCommentFoundException(reviewCommentId) }
+    }
 
-		ReviewCommentEntity validData = ReviewCommentEntity.builder()
-			.content("해당 댓글은 삭제되었습니다.")
-			.commentRef(null)
-			.build();
+    /**
+     * {@inheritDoc}
+     */
+    @Transactional
+    @Throws(NoReviewCommentFoundException::class)
+    override fun decreaseCommentLike(reviewCommentId: Long): ReviewCommentEntity? {
+        var likeOrigin = doesExist(reviewCommentId,
+            { reviewCommentId: Long -> reviewCommentRepo.findByReviewCommentId(reviewCommentId) },
+            { NoReviewCommentFoundException(reviewCommentId) })!!.like
 
-		return reviewCommentRepo.editReviewCommentInfo(reviewCommentId, validData, true);
-	}
+        return reviewCommentRepo.updateReviewCommentLikes(
+            reviewCommentId,
+            if (likeOrigin <= 0) 0 else --likeOrigin
+        ).orElseThrow { throw NoReviewCommentFoundException(reviewCommentId) }
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	@Transactional
-	public ReviewCommentEntity increaseCommentLike(Long reviewCommentId)
-		throws NoReviewCommentFoundException {
-
-		int likeOrigin = doesExist(reviewCommentId, reviewCommentRepo::findByReviewCommentId,
-			() -> new NoReviewCommentFoundException(reviewCommentId)).getLike();
-
-		return reviewCommentRepo.updateReviewCommentLikes(reviewCommentId, ++likeOrigin);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	@Transactional
-	public ReviewCommentEntity decreaseCommentLike(Long reviewCommentId)
-		throws NoReviewCommentFoundException {
-
-		int likeOrigin = doesExist(reviewCommentId, reviewCommentRepo::findByReviewCommentId,
-			() -> new NoReviewCommentFoundException(reviewCommentId)).getLike();
-
-		return reviewCommentRepo.updateReviewCommentLikes(reviewCommentId,
-			likeOrigin <= 0 ? 0 : --likeOrigin);
-	}
+    companion object {
+        /**
+         * 주어진 `id` 로 `function` 호출했을 때 값이 존재하는지 아닌지 확인하는 메서드
+         *
+         * @param id        검사할 ID
+         * @param function  호출할 함수 `(Long -> Optional<?>`
+         * @param exception 부재시 `throw` 할 exception `(() -> RuntimeException)`
+         */
+        private fun <R> doesExist(
+            id: Long,
+            function: Function<Long, Optional<R>>,
+            exception: Supplier<out RuntimeException>
+        ): R {
+            val applied = function.apply(id)
+            if (applied.isEmpty) {
+                throw NoReviewCommentFoundException(id)
+            }
+            return applied.get()
+        }
+    }
 }
