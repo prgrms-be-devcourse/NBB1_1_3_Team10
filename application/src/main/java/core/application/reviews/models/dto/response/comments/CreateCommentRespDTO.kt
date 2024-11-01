@@ -18,7 +18,7 @@ data class CreateCommentRespDTO (
         @JvmStatic
         fun toDTO(entity: ReviewCommentEntity): CreateCommentRespDTO {
             return CreateCommentRespDTO(
-                reviewCommentId = entity.reviewId,
+                reviewCommentId = entity.reviewCommentId,
                 groupId = entity.groupId,
                 commentRef = entity.commentRef,
                 userId = entity.userId,
