@@ -102,11 +102,11 @@ class ReviewController(
 
         // TODO 주어진 userId 에 해당하는 사용자가 없으면 던지는 exception 이 없네...?
         // TODO 나중에 생기면 orElseThrow 에 추가
-        val userAlias = userService.getUserByUserId(searchResult.userId)
-            .orElseThrow()
+        val userAlias = userService.getUserByUserId(searchResult.userId)!!
+            .orElseThrow()!!
             .alias
 
-        return ApiResponse.onSuccess(valueOf(userAlias, searchResult))
+        return ApiResponse.onSuccess(valueOf(userAlias!!, searchResult))
     }
 
     /**
@@ -132,7 +132,7 @@ class ReviewController(
 
         // Spring context holder 에서 CustomUserDetails 가져오고
         // CustomUserDetails 에서 userId 꺼냄
-        val userId = userDetails.userId
+        val userId = userDetails.userId!!
 
         // 해당하는 영화가 DB 에 없으면 createNewReview 에서 throw
         val result = reviewService.createNewReview(
