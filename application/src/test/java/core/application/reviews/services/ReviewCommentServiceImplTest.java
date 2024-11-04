@@ -45,16 +45,9 @@ class ReviewCommentServiceImplTest {
 
 
     private ReviewCommentEntity genComment(Long reviewCommentId, Long reviewId, UUID userId,
-            Long groupId, Long commentRef, Instant createdAt, boolean isUpdated) {
-        return ReviewCommentEntity.builder()
-                .reviewCommentId(reviewCommentId)
-                .reviewId(reviewId)
-                .userId(userId)
-                .groupId(groupId)
-                .commentRef(commentRef)
-                .createdAt(createdAt)
-                .isUpdated(isUpdated)
-                .build();
+                                           Long groupId, Long commentRef, Instant createdAt, boolean isUpdated) {
+        return new ReviewCommentEntity(
+                reviewCommentId, reviewId, userId, "", groupId, commentRef, 0, createdAt, isUpdated);
     }
 
     private List<ReviewCommentEntity> genComments(Long reviewId, Long groupId, Long commentRef) {
@@ -69,20 +62,33 @@ class ReviewCommentServiceImplTest {
         return genComments(reviewId, null, null);
     }
 
-    private void setupRepo(Long reviewId, Long reviewCommentId) {
-        when(reviewRepo.findByReviewId(reviewId))
-                .thenReturn(Optional.of(ReviewEntity.builder().build()));
+    private void setupRepo(List<Long> reviewId, List<Long> reviewCommentId) {
+        when(reviewRepo.findByReviewId(anyLong())).thenAnswer(invocation -> {
+            Long argReviewId = invocation.getArgument(0);
+            return reviewId.contains(argReviewId) ? Optional.of(
+                    new ReviewEntity(0L, "", null, null, null, 0, null, null)) : Optional.empty();
+        });
 
-        when(reviewCommentRepo.findByReviewCommentId(reviewCommentId))
-                .thenReturn(Optional.of(ReviewCommentEntity.builder().build()));
+        when(reviewCommentRepo.findByReviewCommentId(anyLong())).thenAnswer(invocation -> {
+            Long argReviewCommentId = invocation.getArgument(0);
+            return reviewCommentId.contains(argReviewCommentId) ? Optional.of(
+                    new ReviewCommentEntity(0L, 0L, null, "", null, null, 0, null, false)) : Optional.empty();
+        });
 
-        when(reviewRepo.findByReviewId(
-                AdditionalMatchers.not(AdditionalMatchers.geq(reviewId))))
-                .thenReturn(Optional.empty());
+        when(reviewCommentRepo.updateReviewCommentLikes(anyLong(), anyInt()))
+                .thenAnswer(invocation -> {
+                    Long argReviewCommentId = invocation.getArgument(0);
+                    return reviewCommentId.contains(argReviewCommentId) ? Optional.of(
+                            new ReviewCommentEntity(0L, 0L, null, "", null, null, 0, null, false)) :
+                            Optional.empty();
+                });
 
-        when(reviewCommentRepo.findByReviewCommentId(
-                AdditionalMatchers.not(AdditionalMatchers.geq(reviewCommentId))))
-                .thenReturn(Optional.empty());
+        when(reviewCommentRepo.editReviewCommentInfo(anyLong(), any(ReviewCommentEntity.class), anyBoolean()))
+                .thenAnswer(invocation -> {
+                    Long argReviewCommentId = invocation.getArgument(0);
+                    return reviewCommentId.contains(argReviewCommentId) ? Optional.of(
+                            new ReviewCommentEntity(0L, 0L, null, "", null, null, 0, null, false)) : Optional.empty();
+                });
     }
 
     @Test
@@ -92,17 +98,11 @@ class ReviewCommentServiceImplTest {
         log.info("<-- getParentReviewComments");
 
         Long reviewId = random.nextLong();
-        ReviewEntity post = ReviewEntity.builder().build();
+        ReviewEntity post = new ReviewEntity(0L, "", null, null, null, 0, null, null);
 
         List<ReviewCommentEntity> parentComments = genParentComments(reviewId);
 
-        parentComments.forEach(
-                p -> when(reviewRepo.findByReviewId(p.getReviewId()))
-                        .thenReturn(Optional.of(post)));
-
-        // org.mockito.AdditionalMatchers.*;
-        when(reviewRepo.findByReviewId(AdditionalMatchers.not(AdditionalMatchers.geq(reviewId))))
-                .thenReturn(Optional.empty());
+        setupRepo(List.of(reviewId), List.of(random.nextLong()));
 
         parentComments.forEach(
                 p -> when(reviewCommentRepo.findParentCommentByReviewIdOnDateDescend(reviewId, 0,
@@ -145,9 +145,9 @@ class ReviewCommentServiceImplTest {
         log.info("<-- addNewParentReviewComment");
 
         Long reviewId = random.nextLong();
-        ReviewCommentEntity temp = ReviewCommentEntity.builder().build();
+        ReviewCommentEntity temp = new ReviewCommentEntity(0L, null, null, "", null, null, 0, null, false);
 
-        setupRepo(reviewId, random.nextLong());
+        setupRepo(List.of(reviewId), List.of(random.nextLong()));
 
         assertThatThrownBy(() -> reviewCommentService.addNewParentReviewComment(
                 random.nextLong(), UUID.randomUUID(), temp))
@@ -166,9 +166,9 @@ class ReviewCommentServiceImplTest {
         Long reviewId = random.nextLong();
         Long groupId = random.nextLong();
 
-        ReviewCommentEntity temp = ReviewCommentEntity.builder().build();
+        ReviewCommentEntity temp = new ReviewCommentEntity(0L, null, null, "", null, null, 0, null, false);
 
-        setupRepo(reviewId, groupId);
+        setupRepo(List.of(reviewId), List.of(groupId));
 
         assertThatThrownBy(() -> reviewCommentService.addNewChildReviewComment(
                 random.nextLong(), groupId, UUID.randomUUID(), temp))
@@ -193,8 +193,7 @@ class ReviewCommentServiceImplTest {
 
         String replacement = "this is replacement";
 
-        setupRepo(random.nextLong(), reviewCommentId);
-        setupRepo(random.nextLong(), refId);
+        setupRepo(List.of(random.nextLong()), List.of(reviewCommentId, refId));
 
         assertThatThrownBy(() -> reviewCommentService.editReviewComment(
                 random.nextLong(), null, replacement))
@@ -203,9 +202,6 @@ class ReviewCommentServiceImplTest {
         assertThatThrownBy(() -> reviewCommentService.editReviewComment(
                 reviewCommentId, random.nextLong(), replacement))
                 .isInstanceOf(NoReviewCommentFoundException.class);
-
-        when(reviewCommentRepo.findByReviewCommentId(reviewCommentId)).thenReturn(
-                Optional.of(ReviewCommentEntity.builder().build()));
 
         reviewCommentService.editReviewComment(reviewCommentId, refId, replacement);
 
@@ -218,7 +214,7 @@ class ReviewCommentServiceImplTest {
         log.info("<-- deleteReviewComment");
 
         Long reviewCommentId = random.nextLong();
-        setupRepo(random.nextLong(), reviewCommentId);
+        setupRepo(List.of(random.nextLong()), List.of(reviewCommentId));
 
         assertThatThrownBy(() -> reviewCommentService.deleteReviewComment(random.nextLong()))
                 .isInstanceOf(NoReviewCommentFoundException.class);
@@ -235,7 +231,8 @@ class ReviewCommentServiceImplTest {
 
         Long reviewCommentId = random.nextLong();
 
-        setupRepo(random.nextLong(), reviewCommentId);
+        System.out.println(reviewCommentId);
+        setupRepo(List.of(random.nextLong()), List.of(reviewCommentId));
 
         assertThatThrownBy(() -> reviewCommentService.increaseCommentLike(random.nextLong()))
                 .isInstanceOf(NoReviewCommentFoundException.class);
@@ -252,7 +249,7 @@ class ReviewCommentServiceImplTest {
 
         Long reviewCommentId = random.nextLong();
 
-        setupRepo(random.nextLong(), reviewCommentId);
+        setupRepo(List.of(random.nextLong()), List.of(reviewCommentId));
 
         assertThatThrownBy(() -> reviewCommentService.decreaseCommentLike(random.nextLong()))
                 .isInstanceOf(NoReviewCommentFoundException.class);

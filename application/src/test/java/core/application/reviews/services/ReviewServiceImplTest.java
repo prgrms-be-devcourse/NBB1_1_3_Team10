@@ -50,15 +50,7 @@ class ReviewServiceImplTest {
     private ReviewEntity genEntity(
             Long id, String movieId, String title, String content,
             int likes, Instant created, Instant updated) {
-        return ReviewEntity.builder()
-                .reviewId(id)
-                .movieId(movieId)
-                .title(title)
-                .content(content)
-                .like(likes)
-                .createdAt(created)
-                .updatedAt(updated)
-                .build();
+        return new ReviewEntity(id, title, content, null, movieId, likes, created, updated);
     }
 
     @FunctionalInterface
@@ -83,7 +75,7 @@ class ReviewServiceImplTest {
     void setUp() {
         when(cachedMovieRepo.findByMovieId(movieId))
                 .thenReturn(Optional.of(
-                        CachedMovieEntity.builder().build()
+                        new CachedMovieEntity(null, null, null, null, null, null, null, null, null, 0L, 0L, 0L, 0L)
                 ));
 
         Random random = new Random();
@@ -208,11 +200,8 @@ class ReviewServiceImplTest {
                 })
         );
 
-        ReviewEntity replacement = ReviewEntity.builder()
-                .title("replacement")
-                .content("replacement-content")
-                .build();
-
+        ReviewEntity replacement = new ReviewEntity(0L, "replacement", "replacement-content", null, null, 0, null,
+                null);
         testReviews.forEach(t -> {
             ReviewEntity result = reviewService.updateReviewInfo(t.getReviewId(), replacement);
 

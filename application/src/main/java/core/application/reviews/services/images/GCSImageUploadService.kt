@@ -17,19 +17,17 @@ class GCSImageUploadService(
     /**
      * `GCS` 객체
      */
-    private val cloudStorage: Storage
+    private val cloudStorage: Storage,
+
+    @Value("\${gcp.bucket.name}")
+    private val cloudBucketName: String,
+    @Value("\${gcp.bucket.upload-folder}")
+    private val imageFolder: String
 ) : ImageUploadService {
     /**
      * `GCS` 버킷 이름
      */
-    @Value("\${gcp.bucket.name}")
-    private val cloudBucketName: String? = null
 
-    /**
-     * `GCS` 버킷 내 이미지가 저장될 폴더 `(경로)`
-     */
-    @Value("\${gcp.bucket.upload-folder}")
-    private val imageFolder: String? = null
 
     /**
      * {@inheritDoc}
@@ -65,7 +63,7 @@ class GCSImageUploadService(
         log.info("ContentType : {}", file.contentType)
 
         val sizeBytes = file.size
-        val logarithm = (log10(sizeBytes.toDouble()) as Int) / 3
+        val logarithm = (log10(sizeBytes.toDouble()).toInt()) / 3
         val unit = " KMGTPE"[logarithm]
         val size: Double = sizeBytes / 1000.toDouble().pow(logarithm.toDouble())
 
