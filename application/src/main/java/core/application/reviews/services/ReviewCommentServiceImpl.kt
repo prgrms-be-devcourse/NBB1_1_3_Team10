@@ -259,11 +259,11 @@ class ReviewCommentServiceImpl(
         private fun <R> doesExist(
             id: Long,
             function: Function<Long, Optional<R>>,
-            exception: Supplier<out RuntimeException>
+            exception: (Long) -> RuntimeException
         ): R {
             val applied = function.apply(id)
             if (applied.isEmpty) {
-                throw NoReviewCommentFoundException(id)
+                throw exception(id)
             }
             return applied.get()
         }
