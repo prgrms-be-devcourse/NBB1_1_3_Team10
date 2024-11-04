@@ -69,7 +69,7 @@ public class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("회원 가입 시 정상적으로 데이터 저장")
+    @DisplayName("회원 가입")
     public void userService_signup_returnMessageResponseDTO() {
         when(userRepository.saveNewUser(Mockito.any(UserEntity.class))).thenReturn(userEntity);
         when(userRepository.findByUserEmail(signupReqDTO.getUserEmail())).thenReturn(Optional.of(userEntity));
@@ -80,6 +80,7 @@ public class UserServiceImplTest {
     }
 
     @Test
+    @DisplayName("회원 정보 변경")
     public void userService_updateUser_returnMessageResponseDTO() {
         when(authenticatedUserService.getAuthenticatedUserEmail()).thenReturn(userUpdateReqDTO.getUserEmail());
         when(userRepository.findByUserEmail(signupReqDTO.getUserEmail())).thenReturn(Optional.of(userEntity));
@@ -91,6 +92,7 @@ public class UserServiceImplTest {
     }
 
     @Test
+    @DisplayName("회원 정보 삭제")
     public void userService_deleteUser_returnMessageResponseDTO() {
         when(authenticatedUserService.getAuthenticatedUserId()).thenReturn(userEntity.getUserId());
         when(userRepository.deleteUser(userEntity.getUserId())).thenReturn(1);
@@ -101,6 +103,7 @@ public class UserServiceImplTest {
     }
 
     @Test
+    @DisplayName("사용자 id를 이용한 회원 정보 조회")
     public void userService_getUserByUserId_returnUserEntity() {
         when(userRepository.findByUserId(userEntity.getUserId())).thenReturn(Optional.of(userEntity));
 
@@ -110,6 +113,7 @@ public class UserServiceImplTest {
     }
 
     @Test
+    @DisplayName("사용자 email을 이용한 회원 정보 조회")
     public void userService_getUserByUserEmail_returnUserEntity() {
         when(userRepository.findByUserEmail(userEntity.getUserEmail())).thenReturn(Optional.of(userEntity));
 
