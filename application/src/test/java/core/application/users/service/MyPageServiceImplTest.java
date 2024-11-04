@@ -36,36 +36,37 @@ class MyPageServiceImplTest {
 	@BeforeAll
 	static void init() {
 
-		testUser = UserEntity.builder()
-			.userEmail("test@test.com")
-			.userPw("test")
-			.role(UserRole.USER)
-			.alias("소은")
-			.phoneNum("010-0000-0000")
-			.userName("정소은")
-			.userId(userId)
-			.build();
+		testUser = new UserEntity(
+                userId,
+                "test@test.com",
+                "test",
+                UserRole.USER,
+                "소은",
+                "010-0000-0000",
+                "정소은"
+        );
 
-		testDib = DibEntity.builder()
-			.userId(userId)
-			.movieId(movieId)
-			.build();
+		testDib = new DibEntity(
+                null,
+                userId,
+                movieId
+        );
 
-		testMovie = CachedMovieEntity.builder()
-			.movieId(movieId)
-			.title("제목1")
-			.posterUrl("poster.jpg")
-			.genre("로맨스")
-			.plot("줄거리")
-			.releaseDate("2024-05-12")
-			.runningTime("60")
-			.actors("마동석")
-			.director("봉준호")
-			.dibCount(1L)
-			.reviewCount(1L)
-			.commentCount(1L)
-			.sumOfRating(4L)
-			.build();
+		testMovie = new CachedMovieEntity(
+                movieId,
+                "제목1",
+                "poster.jpg",
+                "로맨스",
+                "2024-05-12",
+                "줄거리",
+                "60",
+                "마동석",
+                "봉준호",
+                1L,
+                1L,
+                1L,
+                4L
+        );
 	}
 
 	@Test

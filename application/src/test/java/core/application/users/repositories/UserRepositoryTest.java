@@ -24,23 +24,25 @@ class UserRepositoryTest {
     @BeforeEach
     void init() {
 
-        testUser = UserEntity.builder()
-                .userEmail("test@test.com")
-                .userPw("test")
-                .role(UserRole.USER)
-                .alias("소은")
-                .phoneNum("010-0000-0000")
-                .userName("정소은")
-                .build();
+        testUser = new UserEntity (
+                null,
+                "test@test.com",
+                "test",
+                UserRole.USER,
+                "소은",
+                "010-0000-0000",
+                "정소은"
+        );
 
-        testUser2 = UserEntity.builder()
-                .userEmail("test2@test.com")
-                .userPw("test")
-                .role(UserRole.ADMIN)
-                .alias("소은")
-                .phoneNum("010-0000-0000")
-                .userName("정소은")
-                .build();
+        testUser2 = new UserEntity (
+                null,
+                "test2@test.com",
+                "test",
+                UserRole.ADMIN,
+                "소은",
+                "010-0000-0000",
+                "정소은"
+        );
 
     }
 
@@ -139,15 +141,15 @@ class UserRepositoryTest {
         // Given
         UserEntity save = userRepo.saveNewUser(testUser);
 
-        UserEntity editUser = UserEntity.builder()
-                .userId(save.getUserId())
-                .userEmail(testUser.getUserEmail())
-                .userPw("editPw")
-                .role(UserRole.USER)
-                .alias("소소은")
-                .phoneNum("010-1111-1111")
-                .userName("정소은")
-                .build();
+        UserEntity editUser = new UserEntity(
+                save.getUserId(),
+                testUser.getUserEmail(),
+                "editPw",
+                UserRole.USER,
+                "소소은",
+                "010-1111-1111",
+                "정소은"
+        );
 
         // When
         userRepo.editUserInfo(editUser);

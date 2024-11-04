@@ -35,30 +35,33 @@ class DibRepositoryTest {
     private static CachedMovieEntity testMovie = genMovie(TESTING);
 
     private static UserEntity genUser(String email) {
-        return UserEntity.builder()
-                .userEmail(email)
-                .userPw(TESTING)
-                .role(UserRole.USER)
-                .userName(TESTING)
-                .build();
+        return new UserEntity(
+                null,
+                email,
+                TESTING,
+                UserRole.USER,
+                null,
+                null,
+                TESTING
+        );
     }
 
     private static CachedMovieEntity genMovie(String movieId) {
-        return CachedMovieEntity.builder()
-                .movieId(movieId)
-                .title(TESTING)
-                .posterUrl(TESTING)
-                .genre(TESTING)
-                .releaseDate(TESTING)
-                .plot(TESTING)
-                .runningTime("1234")    // DB 에 길이 제한 있어서 이렇게
-                .actors(TESTING)
-                .director(TESTING)
-                .dibCount(0L)
-                .reviewCount(0L)
-                .commentCount(0L)
-                .sumOfRating(0L)
-                .build();
+        return new CachedMovieEntity(
+                movieId,
+                TESTING,
+                TESTING,
+                TESTING,
+                TESTING,
+                TESTING,
+                "1234",
+                TESTING,
+                TESTING,
+                0L,
+                0L,
+                0L,
+                0L
+        );
     }
 
     private static List<CachedMovieEntity> testMovieList;
