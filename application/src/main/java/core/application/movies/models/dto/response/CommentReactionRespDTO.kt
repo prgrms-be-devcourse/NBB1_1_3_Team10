@@ -5,6 +5,6 @@ import lombok.Data
 
 @Data
 @AllArgsConstructor
-class CommentReactionRespDTO {
+class CommentReactionRespDTO (
     private val message: String? = null
-}
+)

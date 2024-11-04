@@ -9,7 +9,7 @@ import java.time.Instant
 @Data
 @Builder
 @Schema(description = "한줄평 작성 응답 정보")
-class CommentRespDTO (
+data class CommentRespDTO (
     @Schema(description = "한줄평 ID", example = "1")
     val commentId: Long? = null,
 

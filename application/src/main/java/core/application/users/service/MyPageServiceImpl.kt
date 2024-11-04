@@ -29,7 +29,7 @@ class MyPageServiceImpl : MyPageService {
             val movie = movieRepo!!.findByMovieId(myDib.movieId)
             val dibDetail: DibDetailRespDTO = DibDetailRespDTO(
                 movieId = myDib.movieId,
-                movieTitle = movie.get().title,
+                movieTitle = movie!!.get().title,
                 moviePost = movie.get().posterUrl
             )
 
