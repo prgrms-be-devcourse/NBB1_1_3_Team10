@@ -19,7 +19,7 @@ class DibServiceImpl : DibService {
 
     @Transactional
     override fun dibProcess(userId: UUID?, movieId: String?): DibRespDTO {
-        val dibMovieId = movieService!!.getMovieDetailInfo(movieId).movieId
+        val dibMovieId = movieService!!.getMovieDetailInfo(movieId)?.movieId
         val movie = movieRepo!!.findByMovieId(dibMovieId)
 
         // dib_table에 이미 존재하는 객체 -> 찜 취소하기
@@ -28,8 +28,8 @@ class DibServiceImpl : DibService {
             dibRepo.deleteDib(userId, dibMovieId)
 
             // dib_count 1 감소하는 로직 추가
-            movie.get().decrementDibCount()
-            movieRepo.editMovie(dibMovieId, movie.get())
+            movie?.get()?.decrementDibCount()
+            movieRepo.editMovie(dibMovieId, movie?.get())
 
             // DibRespDTO 생성
             return DibRespDTO(
@@ -41,8 +41,8 @@ class DibServiceImpl : DibService {
             dibRepo.saveNewDib(userId, dibMovieId)
 
             // dib_count 1 증가하는 로직 추가
-            movie.get().incrementDibCount()
-            movieRepo.editMovie(dibMovieId, movie.get())
+            movie?.get()?.incrementDibCount()
+            movieRepo.editMovie(dibMovieId, movie?.get())
 
             // DibRespDTO 생성
             return DibRespDTO(
