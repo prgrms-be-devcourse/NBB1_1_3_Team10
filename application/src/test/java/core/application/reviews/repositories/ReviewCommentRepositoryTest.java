@@ -41,33 +41,13 @@ class ReviewCommentRepositoryTest {
 
     // 테스팅 용 user, movie, review
     private static final String TESTING = "TESTING TESTING";
-    private static UserEntity testUser = UserEntity.builder()
-            .userEmail(TESTING)
-            .userName(TESTING)
-            .role(UserRole.USER)
-            .userPw(TESTING)
-            .build();
-    private static CachedMovieEntity testMovie = CachedMovieEntity.builder()
-            .movieId(TESTING)
-            .title(TESTING)
-            .posterUrl(TESTING)
-            .genre(TESTING)
-            .releaseDate(TESTING)
-            .plot(TESTING)
-            .runningTime("1234")    // DB 에 길이 제한 있어서 이렇게
-            .actors(TESTING)
-            .director(TESTING)
-            .dibCount(0L)
-            .reviewCount(0L)
-            .commentCount(0L)
-            .sumOfRating(0L)
-            .build();
-    private static ReviewEntity testReview = ReviewEntity.builder()
-            .reviewId(random.nextLong(Long.MAX_VALUE))
-            .title(TESTING)
-            .content(TESTING)
-            .like(0)
-            .build();
+    private static UserEntity testUser = new UserEntity(null, TESTING, TESTING, UserRole.USER, null, null, TESTING);
+
+    private static CachedMovieEntity testMovie = new CachedMovieEntity(TESTING, TESTING, TESTING, TESTING, TESTING,
+            TESTING, "1234", TESTING, TESTING, 0L, 0L, 0L, 0L);
+
+    private static ReviewEntity testReview = new ReviewEntity(random.nextLong(Long.MAX_VALUE), TESTING, TESTING, null,
+            null, 0, null, null);
 
     /**
      * 테스팅 용 comment 목록들 (페이징, 정렬 상태 확인용)
@@ -81,15 +61,10 @@ class ReviewCommentRepositoryTest {
      */
     private static ReviewCommentEntity genComment(UUID userId, Long reviewId,
             Long groupId, Long commentRef, int like) {
-        return ReviewCommentEntity.builder()
-                .userId(userId)
-                .reviewId(reviewId)
-                .groupId(groupId)
-                .commentRef(commentRef)
-                .like(like)
-                .content(TESTING)
-                .createdAt(Instant.now().truncatedTo(ChronoUnit.SECONDS))
-                .build();
+        return new ReviewCommentEntity(
+                0L, reviewId, userId, TESTING, groupId, commentRef, 0, Instant.now().truncatedTo(ChronoUnit.SECONDS),
+                false
+        );
     }
 
     // 검사해야 할 order 들
@@ -442,13 +417,9 @@ class ReviewCommentRepositoryTest {
 
         Long randomCommentRef = random.nextLong();
 
-        ReviewCommentEntity replacement = ReviewCommentEntity.builder()
-                .content("replacement-content")
-                .userId(UUID.randomUUID())
-                .reviewCommentId(random.nextLong())
-                .reviewId(random.nextLong())
-                .commentRef(randomCommentRef)
-                .build();
+        ReviewCommentEntity replacement = new ReviewCommentEntity(random.nextLong(), random.nextLong(),
+                UUID.randomUUID(), "replacement-content", null,
+                randomCommentRef, 0, null, false);
 
         log.fine(testComment1.toString());
         log.fine(testComment2.toString());
@@ -458,11 +429,11 @@ class ReviewCommentRepositoryTest {
         ReviewCommentEntity result1
                 = reviewCommentRepo.editReviewCommentInfo(
                 testComment1.getReviewCommentId(), replacement, false
-        );
+        ).orElseThrow();
         ReviewCommentEntity result2
                 = reviewCommentRepo.editReviewCommentInfo(
                 testComment2.getReviewCommentId(), replacement, true
-        );
+        ).orElseThrow();
 
         log.fine(result1.toString());
         log.fine(result2.toString());
@@ -528,7 +499,7 @@ class ReviewCommentRepositoryTest {
 
         // 좋아요 변경
         ReviewCommentEntity result = reviewCommentRepo.updateReviewCommentLikes(
-                test.getReviewCommentId(), targetLikes);
+                test.getReviewCommentId(), targetLikes).orElseThrow();
 
         log.fine(result.toString());
 

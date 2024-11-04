@@ -35,27 +35,9 @@ class ReviewRepositoryTest {
 
     // 테스팅 용 user, movie
     private static final String TESTING = "TESTING TESTING";
-    private static UserEntity testUser = UserEntity.builder()
-            .userEmail(TESTING)
-            .userName(TESTING)
-            .role(UserRole.USER)
-            .userPw(TESTING)
-            .build();
-    private static CachedMovieEntity testMovie = CachedMovieEntity.builder()
-            .movieId(TESTING)
-            .title(TESTING)
-            .posterUrl(TESTING)
-            .genre(TESTING)
-            .releaseDate(TESTING)
-            .plot(TESTING)
-            .runningTime("1234")    // DB 에 길이 제한 있어서 이렇게
-            .actors(TESTING)
-            .director(TESTING)
-            .dibCount(0L)
-            .reviewCount(0L)
-            .commentCount(0L)
-            .sumOfRating(0L)
-            .build();
+    private static UserEntity testUser = new UserEntity(null, TESTING, TESTING, UserRole.USER, null, null, TESTING);
+private static CachedMovieEntity testMovie = new CachedMovieEntity(TESTING, TESTING, TESTING, TESTING, TESTING,
+        TESTING, "1234", TESTING, TESTING, 0L, 0L, 0L, 0L);
 
     /**
      * 테스팅 용 review 목록들 (페이징, 정렬 상태 확인용)
@@ -67,14 +49,8 @@ class ReviewRepositoryTest {
      * 손쉽게 review 엔티티 만들기
      */
     private static ReviewEntity genReview(UUID userId, String movieId, int like) {
-        return ReviewEntity.builder()
-                .title(TESTING)
-                .content(TESTING)
-                .like(like)
-                .userId(userId)
-                .movieId(movieId)
-                .createdAt(Instant.now().truncatedTo(ChronoUnit.SECONDS))
-                .build();
+        return new ReviewEntity(0L, TESTING, TESTING, userId, movieId, like,
+                Instant.now().truncatedTo(ChronoUnit.SECONDS), null);
     }
 
     // 검사해야 할 order 들
@@ -310,11 +286,8 @@ class ReviewRepositoryTest {
         ReviewEntity testReview = reviewRepo.saveNewReview(testMovie.getMovieId(),
                 testUser.getUserId(), genReview(null, null, 0));
 
-        ReviewEntity replacement = ReviewEntity.builder()
-                .title("replacement")
-                .content("replacement-content")
-                .userId(UUID.randomUUID())
-                .build();
+        ReviewEntity replacement = new ReviewEntity(0L, "replacement", "replacement-content", UUID.randomUUID(), null,
+                0, null, null);
 
         log.fine(testReview.toString());
         log.fine(replacement.toString());
