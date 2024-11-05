@@ -7,7 +7,7 @@ import lombok.Data
 @Data
 @Builder
 @Schema(description = "메인 페이지에 제공되는 영화 목록")
-class MainPageMoviesRespDTO(
+data class MainPageMoviesRespDTO(
     @Schema(description = "찜 많은 순 영화 목록")
     val dibMovieList: List<MainPageMovieRespDTO?>?,
 
