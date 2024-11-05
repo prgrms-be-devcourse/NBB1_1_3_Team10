@@ -8,7 +8,7 @@ import lombok.Data
 @Data
 @Builder
 @Schema(description = "메인 페이지의 제공되는 각 영화 정보")
-class MainPageMovieRespDTO(
+data class MainPageMovieRespDTO(
     @Schema(description = "영화 ID", example = "A-12345")
     val movieId: String? = null,
 
