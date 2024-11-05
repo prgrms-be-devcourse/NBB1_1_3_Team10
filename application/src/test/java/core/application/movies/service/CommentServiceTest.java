@@ -3,11 +3,7 @@ package core.application.movies.service;
 import static org.assertj.core.api.Assertions.*;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -45,14 +41,15 @@ public class CommentServiceTest {
 	@BeforeEach
 	public void setUp() {
 		for (int i = 0; i < 10; i++) {
-			UserEntity testUser = UserEntity.builder()
-				.userEmail(String.valueOf(i))
-				.userPw("test")
-				.role(UserRole.USER)
-				.alias("nickname")
-				.phoneNum("phone")
-				.userName("test")
-				.build();
+            UserEntity testUser = new UserEntity(
+                    UUID.randomUUID(),
+                    String.valueOf(i),
+                    "test",
+                    UserRole.USER,
+                    "nickname",
+                    "phone",
+                    "test"
+            );
 			userRepository.saveNewUser(testUser);
 			users.add(userRepository.findByUserEmail(String.valueOf(i)).orElseThrow());
 		}
@@ -256,11 +253,11 @@ public class CommentServiceTest {
 		// THEN
 		for (CommentRespDTO comment : comments) {
 			if (reactionCommentIds.contains(comment.getCommentId())) {
-				assertThat(comment.getIsLiked()).isTrue();
-				assertThat(comment.getIsDisliked()).isTrue();
+				assertThat(comment.isLiked()).isTrue();
+				assertThat(comment.isDisliked()).isTrue();
 			} else {
-				assertThat(comment.getIsLiked()).isFalse();
-				assertThat(comment.getIsDisliked()).isFalse();
+				assertThat(comment.isLiked()).isFalse();
+				assertThat(comment.isDisliked()).isFalse();
 			}
 		}
 	}

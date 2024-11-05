@@ -67,6 +67,8 @@ dependencies {
     implementation ("org.springframework.boot:spring-boot-starter-oauth2-client")
     implementation ("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation ("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
+    testImplementation("org.springframework.boot:spring-boot-starter-security")
+    testImplementation("org.springframework.security:spring-security-test")
 
     compileOnly ("org.projectlombok:lombok")
     runtimeOnly ("com.mysql:mysql-connector-j")

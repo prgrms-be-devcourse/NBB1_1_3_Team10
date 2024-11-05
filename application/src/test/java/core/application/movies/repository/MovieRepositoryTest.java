@@ -144,6 +144,7 @@ public class MovieRepositoryTest {
 		});
 	}
 
+	// error 발생
 	@Test
 	@DisplayName("commentCount가 0인 영화는 평균 평점 정렬 시 최하위에 정렬된다.")
 	public void commentCountTest() {
@@ -185,6 +186,7 @@ public class MovieRepositoryTest {
 		// THEN
 		for (int i = 0; i < 8; i++) {
 			System.out.println(i + " : " + movies.get(i).getMovieId());
+			System.out.println(movies.get(i).getSumOfRating());
 			assertThat(movies.get(i).getSumOfRating()).isEqualTo(100 - (10 * i));
 			assertThat(movies.get(i).getCommentCount()).isNotEqualTo(0);
 		}
@@ -193,6 +195,8 @@ public class MovieRepositoryTest {
 		}
 	}
 
+
+	//error 발생
 	@Test
 	@DisplayName("특정 장르의 영화를 평점순으로 제공한다.")
 	public void genreAvgRatingTest() {
