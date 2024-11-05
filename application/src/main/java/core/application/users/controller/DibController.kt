@@ -19,8 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequiredArgsConstructor
 @RequestMapping("/movies")
 @Tag(name = "Dib", description = "영화 찜 API")
-class DibController {
-    private val dibService: DibService? = null
+class DibController (private val dibService: DibService) {
 
     @Operation(summary = "영화 찜 등록/취소")
     @PutMapping("/{movieId}/dib")
@@ -29,7 +28,7 @@ class DibController {
         @AuthenticationPrincipal userDetails: CustomUserDetails
     ): ApiResponse<DibRespDTO?> {
         val userId = userDetails.userId
-        val dibRespDTO = dibService!!.dibProcess(userId, movieId)
+        val dibRespDTO = dibService.dibProcess(userId, movieId)
         return ApiResponse.onSuccess(dibRespDTO)
     }
 }

@@ -11,19 +11,19 @@ import java.util.*
 
 @Service
 @RequiredArgsConstructor
-class DibServiceImpl : DibService {
-    private val dibRepo: DibRepository? = null
-    private val movieRepo: CachedMovieRepository? = null
-
-    private val movieService: MovieService? = null
+class DibServiceImpl (
+    private val dibRepo: DibRepository,
+    private val movieRepo: CachedMovieRepository,
+    private val movieService: MovieService
+):DibService {
 
     @Transactional
     override fun dibProcess(userId: UUID?, movieId: String?): DibRespDTO {
-        val dibMovieId = movieService!!.getMovieDetailInfo(movieId)?.movieId
-        val movie = movieRepo!!.findByMovieId(dibMovieId)
+        val dibMovieId = movieService.getMovieDetailInfo(movieId)?.movieId
+        val movie = movieRepo.findByMovieId(dibMovieId)
 
         // dib_table에 이미 존재하는 객체 -> 찜 취소하기
-        if (dibRepo!!.findByUserIdAndMovieId(userId, dibMovieId).isPresent) {
+        if (dibRepo.findByUserIdAndMovieId(userId, dibMovieId).isPresent) {
             // 찜 레코드 삭제
             dibRepo.deleteDib(userId, dibMovieId)
 
