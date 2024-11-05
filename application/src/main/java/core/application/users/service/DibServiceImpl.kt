@@ -46,7 +46,7 @@ class DibServiceImpl (
 
             // DibRespDTO 생성
             return DibRespDTO(
-                message = "찜 취소 완료되었습니다.",
+                message = "찜 완료되었습니다.",
                 userId = userId,
                 movieId = dibMovieId
             )
