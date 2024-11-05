@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="core.application.movies.repositories.mapper.CommentDislikeMapper">
+    <insert id="save">
+        insert into comment_dislike_table (comment_id, user_id)
+        values (#{commentId}, #{userId})
+    </insert>
+
+    <select id="countLikeByUser">
+        select count(*) from comment_dislike_table
+        where comment_id=#{commentId} and user_id=#{userId}
+    </select>
+
+    <delete id="delete">
+        delete from comment_dislike_table
+        where comment_id=#{commentId} and user_id=#{userId}
+    </delete>
+</mapper>

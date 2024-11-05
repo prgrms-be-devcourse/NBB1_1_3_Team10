@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="core.application.users.mapper.UserMapper">
+    <insert id="saveNewUser">
+        INSERT INTO user_table(user_email, user_pw, user_name, role, alias, phone_num)
+        VALUES (#{newUser.userEmail},#{newUser.userPw}, #{newUser.userName}, #{newUser.role}, #{newUser.alias}, #{newUser.phoneNum})
+    </insert>
+
+    <update id="editUserInfo" useGeneratedKeys="true" keyProperty="userId">
+        UPDATE user_table
+        SET user_pw = #{replacement.userPw},
+            user_name = #{replacement.userName},
+            alias = #{replacement.alias},
+            phone_num = #{replacement.phoneNum}
+        WHERE user_id = #{replacement.userId}
+    </update>
+
+    <delete id="deleteUser">
+        DELETE FROM user_table
+        WHERE user_id = #{userId}
+    </delete>
+
+    <select id="findByUserId" resultType="core.application.users.models.entities.UserEntity">
+        SELECT user_id, user_email, user_pw, user_name, role, alias, phone_num
+        FROM user_table
+        WHERE user_id = #{userId}
+    </select>
+
+    <select id="findByUserEmail" resultType="core.application.users.models.entities.UserEntity">
+        SELECT user_id, user_email, user_pw, user_name, role, alias, phone_num
+        FROM user_table
+        WHERE user_email = #{userEmail}
+    </select>
+
+    <select id="findByUserEmailAndPassword" resultType="core.application.users.models.entities.UserEntity">
+        SELECT user_id, user_email, user_pw, user_name, role, alias, phone_num
+        FROM user_table
+        WHERE user_email = #{userEmail} AND user_pw = #{userPw}
+    </select>
+
+    <select id="findByUserRole" resultType="core.application.users.models.entities.UserEntity">
+        SELECT user_id, user_email, user_pw, user_name, role, alias, phone_num
+        FROM user_table
+        WHERE role = #{role}
+    </select>
+
+    <select id="findAll" resultType="core.application.users.models.entities.UserEntity">
+        SELECT user_id, user_email, user_pw, user_name, role, alias, phone_num
+        FROM user_table
+    </select>
+</mapper>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="core.application.reviews.repositories.mybatis.mappers.ReviewCommentMapper">
+
+  <insert id="insertReviewComment" useGeneratedKeys="true" keyProperty="reviewCommentId">
+    INSERT INTO review_comment_table
+    (review_id, user_id, content, group_id, comment_ref, `like`, created_at)
+    VALUES (#{reviewId}, #{userId}, #{content}, #{groupId}, #{commentRef}, #{like}, #{createdAt})
+  </insert>
+
+  <select id="findByReviewCommentId" resultMap="ReviewCommentResultMap">
+    SELECT *
+    FROM review_comment_table
+    WHERE review_comment_id = #{reviewCommentId}
+  </select>
+
+  <select id="findParentCommentByReviewId" resultMap="ReviewCommentResultMap">
+    SELECT *
+    FROM review_comment_table
+    WHERE review_id = #{reviewId}
+      AND group_id IS NULL
+    ORDER BY created_at DESC, review_comment_id DESC
+    LIMIT #{num} OFFSET #{offset}
+  </select>
+
+  <select id="findParentCommentByReviewIdOnDateDescend" resultMap="ReviewCommentResultMap">
+    SELECT *
+    FROM review_comment_table
+    WHERE review_id = #{reviewId}
+      AND group_id IS NULL
+    ORDER BY created_at DESC, review_comment_id DESC
+    LIMIT #{num} OFFSET #{offset}
+  </select>
+
+  <select id="findParentCommentByReviewIdOnLikeDescend" resultMap="ReviewCommentResultMap">
+    SELECT *
+    FROM review_comment_table
+    WHERE review_id = #{reviewId}
+      AND group_id IS NULL
+    ORDER BY `like` DESC, review_comment_id DESC
+    LIMIT #{num} OFFSET #{offset}
+  </select>
+
+  <select id="countParentCommentByReviewId" resultType="java.lang.Long">
+    SELECT COUNT(*)
+    FROM review_comment_table
+    WHERE review_id = #{reviewId}
+      AND group_id IS NULL
+  </select>
+
+  <select id="findChildCommentsByGroupId" resultMap="ReviewCommentResultMap">
+    SELECT *
+    FROM review_comment_table
+    WHERE group_id = #{groupId}
+    ORDER BY created_at DESC, review_comment_id DESC
+    LIMIT #{num} OFFSET #{offset}
+  </select>
+
+  <select id="countChildCommentByGroupId" resultType="java.lang.Long">
+    SELECT COUNT(*)
+    FROM review_comment_table
+    WHERE group_id = #{groupId}
+  </select>
+
+  <select id="selectAllParentComments" resultMap="ReviewCommentResultMap">
+    SELECT *
+    FROM review_comment_table
+    WHERE group_id IS NULL
+  </select>
+
+  <select id="selectAll" resultMap="ReviewCommentResultMap">
+    SELECT *
+    FROM review_comment_table
+  </select>
+
+  <update id="updateReviewCommentEntity">
+    UPDATE review_comment_table
+    SET content     = #{replacement.content},
+        comment_ref = #{replacement.commentRef},
+        is_updated  = #{isUpdated}
+    WHERE review_comment_id = #{reviewCommentId}
+  </update>
+
+  <update id="updateCommentLikes">
+    UPDATE review_comment_table
+    SET `like` = #{likes}
+    WHERE review_comment_id = #{reviewCommentId}
+  </update>
+
+  <resultMap id="ReviewCommentResultMap"
+    type="core.application.reviews.models.entities.ReviewCommentEntity">
+    <result property="reviewCommentId" column="review_comment_id"/>
+    <result property="reviewId" column="review_id"/>
+    <result property="userId" column="user_id"/>
+    <result property="content" column="content"/>
+    <result property="groupId" column="group_id"/>
+    <result property="commentRef" column="comment_ref"/>
+    <result property="like" column="like"/>
+    <result property="createdAt" column="created_at"/>
+    <result property="isUpdated" column="is_updated"/>
+  </resultMap>
+</mapper>
